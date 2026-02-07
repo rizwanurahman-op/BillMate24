@@ -29,6 +29,15 @@ const startServer = async () => {
     try {
         await connectDatabase();
 
+        // Create database indexes for optimized dashboard performance
+        try {
+            const { createDashboardIndexes } = await import('./utils/create-dashboard-indexes');
+            await createDashboardIndexes();
+        } catch (indexError) {
+            console.warn('⚠️ Could not create dashboard indexes:', indexError);
+            // Non-blocking - app continues even if indexes fail
+        }
+
         app.listen(parseInt(env.PORT, 10), () => {
             console.log(`🚀 Server running on http://localhost:${env.PORT}`);
             console.log(`📚 API available at http://localhost:${env.PORT}/api`);
