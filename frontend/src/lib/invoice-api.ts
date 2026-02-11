@@ -78,4 +78,14 @@ export const invoiceApi = {
         const response = await api.post(`/invoices/${id}/share`);
         return response.data.data;
     },
+
+    /**
+     * Preview PDF from raw data (returns blob)
+     */
+    async preview(data: any): Promise<Blob> {
+        const response = await api.post('/invoices/preview', data, {
+            responseType: 'blob',
+        });
+        return response.data;
+    },
 };

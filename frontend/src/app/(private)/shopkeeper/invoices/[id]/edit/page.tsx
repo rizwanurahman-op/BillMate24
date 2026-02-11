@@ -161,6 +161,7 @@ export default function EditInvoicePage() {
         },
         onError: () => {
             toast.error(t('invoices.messages.error_update'));
+            setIsPreviewing(false);
         },
     });
 
@@ -233,17 +234,11 @@ export default function EditInvoicePage() {
             return;
         }
 
-        // Prepare data and remove empty dueDate to prevent validation errors
-        const dataToSubmit = { ...formData };
-        if (!dataToSubmit.dueDate || dataToSubmit.dueDate === '') {
-            delete dataToSubmit.dueDate;
-        }
-
-        setIsPreviewing(true);
-        updateMutation.mutate(dataToSubmit as UpdateInvoiceInput);
+        setPreviewOpen(true);
     };
 
     const handleSubmit = (status: 'draft' | 'sent') => {
+        setIsPreviewing(false);
         if (!formData.customerName || !formData.items || formData.items.length === 0) {
             toast.error(t('invoices.validation.customer_name_required'));
             return;
@@ -1467,6 +1462,7 @@ export default function EditInvoicePage() {
                         setPreviewOpen(open);
                     }}
                     invoiceId={invoiceId}
+                    invoiceData={formData}
                     invoiceNumber={formData.invoiceNumber || ''}
                     templateId={formData.templateId || 'modern'}
                     colorScheme={formData.colorScheme || 'blue'}

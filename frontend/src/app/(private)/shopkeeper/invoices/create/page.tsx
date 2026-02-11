@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { invoiceApi } from '@/lib/invoice-api';
-import { CreateInvoiceInput, Invoice, InvoiceItem } from '@/types/invoice';
+import { CreateInvoiceInput, UpdateInvoiceInput, Invoice, InvoiceItem } from '@/types/invoice';
 import { toast } from 'sonner';
 import { InvoicePdfPreview } from '../components/invoice-pdf-preview';
 import { Badge } from '@/components/ui/badge';
@@ -215,16 +215,26 @@ export default function CreateInvoicePage() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: Invoice['status'] }) =>
-            invoiceApi.update(id, { status }),
+        mutationFn: ({ id, ...data }: { id: string } & Partial<UpdateInvoiceInput>) =>
+            invoiceApi.update(id, data),
         onSuccess: (invoice) => {
             queryClient.invalidateQueries({ queryKey: ['invoices'] });
-            toast.success(t('invoices.messages.success_create'));
-            // Don't redirect - stay on create page for continuous invoice creation
+
+            if (isPreviewing) {
+                setPreviewOpen(true);
+                setIsPreviewing(false);
+            } else {
+                toast.success(t('invoices.messages.success_create'));
+                // Only reset form if user explicitly clicked "Save/Finalize"
+                if (invoice.status !== 'draft') {
+                    resetForm();
+                }
+            }
         },
         onError: (error: any) => {
             const errorMessage = error?.response?.data?.error || error?.response?.data?.message;
             toast.error(errorMessage);
+            setIsPreviewing(false);
         },
     });
 
@@ -351,7 +361,6 @@ export default function CreateInvoicePage() {
     };
 
     const handlePreview = () => {
-        setIsPreviewing(true);
         if (!formData.customerName) {
             toast.error(t('invoices.validation.customer_name_required'));
             return;
@@ -378,13 +387,7 @@ export default function CreateInvoicePage() {
             }
         }
 
-        // Create as draft for preview
-        const dataToSubmit = { ...formData, status: 'draft' };
-        if (!dataToSubmit.dueDate || dataToSubmit.dueDate === '') {
-            delete dataToSubmit.dueDate;
-        }
-
-        createMutation.mutate(dataToSubmit as CreateInvoiceInput);
+        setPreviewOpen(true);
     };
 
     const applySuggestion = (type: 'notes' | 'terms', text: string) => {
@@ -1697,41 +1700,42 @@ export default function CreateInvoicePage() {
                 </div>
 
                 {/* Professional Backend PDF Preview */}
-                {previewInvoiceId && (
-                    <InvoicePdfPreview
-                        open={previewOpen}
-                        onOpenChange={(open) => {
-                            setPreviewOpen(open);
-                            if (!open && formData.status === 'sent') {
-                                // Only navigate away if invoice was finalized
-                                router.push('/shopkeeper/invoices');
-                            }
-                            // If draft, just close and stay for editing
-                        }}
-                        invoiceId={previewInvoiceId}
-                        invoiceNumber={formData.invoiceNumber || ''}
-                        templateId={formData.templateId || 'modern'}
-                        colorScheme={formData.colorScheme || 'blue'}
-                        status={formData.status}
-                        onFinalize={() => {
-                            if (previewInvoiceId) {
-                                updateMutation.mutate(
-                                    {
-                                        id: previewInvoiceId,
-                                        status: 'sent'
-                                    },
-                                    {
-                                        onSuccess: () => {
-                                            setPreviewOpen(false);
-                                            // Reset form for next invoice
-                                            resetForm();
-                                        }
+                <InvoicePdfPreview
+                    open={previewOpen}
+                    onOpenChange={(open) => {
+                        setPreviewOpen(open);
+                        if (!open && formData.status === 'sent') {
+                            // Only navigate away if invoice was finalized
+                            router.push('/shopkeeper/invoices');
+                        }
+                    }}
+                    invoiceId={previewInvoiceId || undefined}
+                    invoiceData={!previewInvoiceId ? formData : undefined}
+                    invoiceNumber={formData.invoiceNumber || ''}
+                    templateId={formData.templateId || 'modern'}
+                    colorScheme={formData.colorScheme || 'blue'}
+                    status={formData.status}
+                    onFinalize={() => {
+                        if (previewInvoiceId) {
+                            updateMutation.mutate(
+                                {
+                                    id: previewInvoiceId,
+                                    status: 'sent'
+                                },
+                                {
+                                    onSuccess: () => {
+                                        setPreviewOpen(false);
+                                        // Reset form for next invoice
+                                        resetForm();
                                     }
-                                );
-                            }
-                        }}
-                    />
-                )}
+                                }
+                            );
+                        } else {
+                            handleSubmit('sent');
+                            setPreviewOpen(false);
+                        }
+                    }}
+                />
             </div>
         </div>
     );

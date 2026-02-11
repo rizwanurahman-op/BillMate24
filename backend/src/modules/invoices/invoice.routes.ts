@@ -21,6 +21,7 @@ router.delete('/:id', invoiceController.delete.bind(invoiceController));
 router.post('/:id/share', invoiceController.share.bind(invoiceController));
 
 // PDF generation routes
+router.post('/preview', invoiceController.previewPdf.bind(invoiceController));
 router.get('/:id/pdf', invoiceController.generatePdf.bind(invoiceController));
 router.get('/:id/download', invoiceController.downloadPdf.bind(invoiceController));
 

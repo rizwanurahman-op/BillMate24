@@ -6,12 +6,14 @@ import { Download, Share2, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '@/config/axios';
 import { PdfViewer } from '@/components/app/pdf-viewer';
+import { invoiceApi } from '@/lib/invoice-api';
 
 interface InvoicePdfPreviewProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    invoiceId: string;
+    invoiceId?: string;
     invoiceNumber: string;
+    invoiceData?: any;
     templateId?: string;
     colorScheme?: string;
     status?: string;
@@ -23,6 +25,7 @@ export function InvoicePdfPreview({
     onOpenChange,
     invoiceId,
     invoiceNumber,
+    invoiceData,
     templateId = 'modern',
     colorScheme = 'blue',
     status,
@@ -44,21 +47,35 @@ export function InvoicePdfPreview({
         return () => {
             if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
         };
-    }, [open, invoiceId, templateId, colorScheme]);
+    }, [open, invoiceId, templateId, colorScheme, JSON.stringify(invoiceData)]);
 
     const loadPdf = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get(`/invoices/${invoiceId}/pdf`, {
-                params: {
-                    template: templateId,
-                    color: colorScheme
-                },
-                responseType: 'blob'
-            });
+            let blob: Blob;
 
-            const blob = new Blob([response.data], { type: 'application/pdf' });
+            if (invoiceData) {
+                // Use preview endpoint for raw data
+                blob = await invoiceApi.preview({
+                    ...invoiceData,
+                    templateId,
+                    colorScheme
+                });
+            } else if (invoiceId) {
+                // Use existing ID-based endpoint
+                const response = await api.get(`/invoices/${invoiceId}/pdf`, {
+                    params: {
+                        template: templateId,
+                        color: colorScheme
+                    },
+                    responseType: 'blob'
+                });
+                blob = new Blob([response.data], { type: 'application/pdf' });
+            } else {
+                throw new Error('No invoice data or ID provided');
+            }
+
             const url = URL.createObjectURL(blob);
             setPdfBlobUrl(url);
             setLoading(false);
@@ -100,14 +117,16 @@ export function InvoicePdfPreview({
             }
         }
 
-        // Fallback to link sharing
-        try {
-            const response = await api.post(`/invoices/${invoiceId}/share`);
-            if (response.data.success) {
-                window.open(response.data.data.url, '_blank');
+        // Fallback to link sharing - only if we have an ID
+        if (invoiceId) {
+            try {
+                const response = await api.post(`/invoices/${invoiceId}/share`);
+                if (response.data.success) {
+                    window.open(response.data.data.url, '_blank');
+                }
+            } catch (error) {
+                console.error('Error sharing invoice link:', error);
             }
-        } catch (error) {
-            console.error('Error sharing invoice link:', error);
         }
     };
 

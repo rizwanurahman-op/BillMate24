@@ -472,6 +472,47 @@ export class InvoiceService {
     const pdfGenerator = new InvoicePdfGenerator(invoice, colorScheme);
     await pdfGenerator.generateAndSend(res, templateId);
   }
+
+  /**
+   * Preview PDF from raw data (without saving to DB)
+   */
+  async previewPdf(
+    shopkeeperId: string,
+    input: any,
+    res: Response,
+  ): Promise<void> {
+    const templateId = input.templateId || "modern";
+    const colorSchemeId = input.colorScheme || "blue";
+
+    const colorScheme =
+      this.getColorSchemes().find((c) => c.id === colorSchemeId) ||
+      this.getColorSchemes()[0];
+
+    // Always fetch the LATEST shop details from user profile 
+    const { User } = require("../users/user.model");
+    const shopkeeper = await User.findById(shopkeeperId);
+
+    // Construct temporal invoice object for generator
+    const tempInvoice = {
+      ...input,
+      invoiceDate: input.invoiceDate ? new Date(input.invoiceDate) : new Date(),
+      dueDate: input.dueDate ? new Date(input.dueDate) : undefined,
+    };
+
+    if (shopkeeper) {
+      tempInvoice.shopName = shopkeeper.businessName || tempInvoice.shopName;
+      tempInvoice.shopPhone = shopkeeper.phone || tempInvoice.shopPhone;
+      tempInvoice.shopEmail = shopkeeper.email;
+      const addressParts = [shopkeeper.address, shopkeeper.place].filter(Boolean);
+      const fullAddress = addressParts.join(", ");
+      if (fullAddress) {
+        tempInvoice.shopAddress = fullAddress;
+      }
+    }
+
+    const pdfGenerator = new InvoicePdfGenerator(tempInvoice, colorScheme);
+    await pdfGenerator.generateAndSend(res, templateId);
+  }
 }
 
 export const invoiceService = new InvoiceService();

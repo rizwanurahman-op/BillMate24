@@ -144,6 +144,17 @@ export class InvoiceController {
             }
         }
     }
+
+    /**
+     * Preview PDF without saving
+     */
+    async previewPdf(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            await invoiceService.previewPdf(req.user!._id, req.body, res);
+        } catch (error: any) {
+            next(error);
+        }
+    }
 }
 
 export const invoiceController = new InvoiceController();
