@@ -69,21 +69,45 @@ export function InvoicePdfPreview({
         }
     };
 
-    const downloadUrl = api.defaults.baseURL + `/invoices/${invoiceId}/download?template=${templateId}&color=${colorScheme}`;
-
     const handleDownload = () => {
-        window.open(downloadUrl, '_blank');
+        if (!pdfBlobUrl) return;
+        const link = document.createElement('a');
+        link.href = pdfBlobUrl;
+        link.download = `Invoice_${invoiceNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const handleShare = async () => {
+        // Attempt to share the PDF file directly if supported
+        if (pdfBlobUrl && navigator.share && navigator.canShare) {
+            try {
+                const response = await fetch(pdfBlobUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `Invoice_${invoiceNumber}.pdf`, { type: 'application/pdf' });
+
+                if (navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: `Invoice ${invoiceNumber}`,
+                        text: `Invoice from ${invoiceNumber}`,
+                    });
+                    return; // Successfully shared file
+                }
+            } catch (err) {
+                console.error('File sharing failed:', err);
+            }
+        }
+
+        // Fallback to link sharing
         try {
             const response = await api.post(`/invoices/${invoiceId}/share`);
-
             if (response.data.success) {
                 window.open(response.data.data.url, '_blank');
             }
         } catch (error) {
-            console.error('Error sharing invoice:', error);
+            console.error('Error sharing invoice link:', error);
         }
     };
 

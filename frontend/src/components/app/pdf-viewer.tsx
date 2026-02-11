@@ -127,18 +127,27 @@ export function PdfViewer({ url, title = 'PDF Preview', className = '' }: PdfVie
         try {
             const pdf = pdfDocRef.current;
             const page = await pdf.getPage(currentPage);
-            const viewport = page.getViewport({ scale: scale * 1.5 }); // High-DPI
+
+            // Higher factor for much better clarity on mobile (e.g. scale * 2.5 for HD view)
+            const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+            const scaleFactor = scale * (dpr > 1 ? 2.5 : 2.0); // Upscale for clarity
+            const viewport = page.getViewport({ scale: scaleFactor });
 
             const canvas = canvasRef.current;
-            const context = canvas.getContext('2d');
+            const context = canvas.getContext('2d', { alpha: false });
             if (!context) throw new Error('Could not get canvas context');
 
             canvas.height = viewport.height;
             canvas.width = viewport.width;
 
+            // Ensure smooth rendering
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+
             const renderContext = {
                 canvasContext: context,
-                viewport: viewport
+                viewport: viewport,
+                intent: 'display'
             };
 
             const renderTask = page.render(renderContext);
