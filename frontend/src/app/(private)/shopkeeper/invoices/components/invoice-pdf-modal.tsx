@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { Invoice } from '@/types/invoice';
 import api from '@/config/axios';
 import { toast } from 'sonner';
+import Script from 'next/script';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface InvoicePdfModalProps {
     open: boolean;
@@ -34,6 +36,15 @@ export function InvoicePdfModal({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [pdfBlobUrl, setPdfBlobUrl] = useState<string>('');
+    const [isMobile, setIsMobile] = useState(false);
+    const [pdfjsLoaded, setPdfjsLoaded] = useState(false);
+    const [numPages, setNumPages] = useState<number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [scale, setScale] = useState(1.0);
+
+    useEffect(() => {
+        setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    }, []);
 
     // Use the invoice's saved template and color scheme
     const finalTemplateId = invoice.templateId || templateId || 'modern';
@@ -60,6 +71,8 @@ export function InvoicePdfModal({
     const loadPdf = async () => {
         setLoading(true);
         setError(null);
+        setNumPages(null);
+        setCurrentPage(1);
 
         try {
             const response = await api.get(`/invoices/${invoice._id}/pdf`, {
@@ -78,6 +91,44 @@ export function InvoicePdfModal({
             console.error('PDF load error:', err);
             setError(err.response?.data?.message || 'Failed to load PDF. Please try again.');
             setLoading(false);
+        }
+    };
+
+    // Render PDF page to canvas
+    useEffect(() => {
+        if (pdfjsLoaded && pdfBlobUrl && isMobile && open) {
+            renderPdfPage();
+        }
+    }, [pdfjsLoaded, pdfBlobUrl, currentPage, scale, isMobile, open]);
+
+    const renderPdfPage = async () => {
+        try {
+            const pdfjsLib = (window as any).pdfjsLib;
+            if (!pdfjsLib) return;
+
+            const loadingTask = pdfjsLib.getDocument(pdfBlobUrl);
+            const pdf = await loadingTask.promise;
+            setNumPages(pdf.numPages);
+
+            const page = await pdf.getPage(currentPage);
+            const viewport = page.getViewport({ scale: scale * 1.5 }); // High-DPI render
+
+            const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
+            if (!canvas) return;
+
+            const context = canvas.getContext('2d');
+            if (!context) return;
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+            await page.render(renderContext).promise;
+        } catch (err) {
+            console.error('Error rendering PDF page:', err);
         }
     };
 
@@ -143,7 +194,7 @@ export function InvoicePdfModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-lg sm:rounded-xl">
+            <DialogContent className="w-[95vw] sm:max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-lg sm:rounded-xl">
                 <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0 bg-gradient-to-r from-blue-50 to-purple-50">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
                         <div className="flex-1">
@@ -174,12 +225,20 @@ export function InvoicePdfModal({
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-hidden relative bg-gray-100">
+                <div className="flex-1 overflow-hidden relative bg-gray-100 flex flex-col">
+                    <Script
+                        src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+                        onLoad={() => {
+                            (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+                            setPdfjsLoaded(true);
+                        }}
+                    />
+
                     {loading ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
                             <div className="text-center">
                                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                                <p className="text-gray-600">Loading PDF...</p>
+                                <p className="text-gray-600 font-medium">Preparing Preview...</p>
                             </div>
                         </div>
                     ) : error ? (
@@ -196,11 +255,68 @@ export function InvoicePdfModal({
                             </div>
                         </div>
                     ) : pdfBlobUrl ? (
-                        <iframe
-                            src={`${pdfBlobUrl}#toolbar=0`}
-                            className="w-full h-full border-0"
-                            title="Invoice PDF Preview"
-                        />
+                        <>
+                            {isMobile ? (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    {/* Mobile Controls */}
+                                    <div className="bg-white border-b px-2 py-2 flex items-center justify-between shadow-sm z-10">
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                                disabled={currentPage <= 1}
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </Button>
+                                            <span className="text-xs font-medium text-gray-600">
+                                                {currentPage} / {numPages || '?'}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => setCurrentPage(prev => Math.min(numPages || prev, prev + 1))}
+                                                disabled={numPages ? currentPage >= numPages : false}
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => setScale(prev => Math.max(0.5, prev - 0.2))}
+                                            >
+                                                <ZoomOut className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => setScale(prev => Math.min(3, prev + 0.2))}
+                                            >
+                                                <ZoomIn className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    {/* Canvas Area */}
+                                    <div className="flex-1 overflow-auto bg-gray-200 p-4 flex justify-center items-start">
+                                        <div className="bg-white shadow-lg origin-top transition-transform duration-200">
+                                            <canvas id="pdf-canvas" className="max-w-full h-auto shadow-sm" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <iframe
+                                    src={`${pdfBlobUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                                    className="w-full h-full border-0"
+                                    title="Invoice PDF Preview"
+                                />
+                            )}
+                        </>
                     ) : null}
                 </div>
             </DialogContent>

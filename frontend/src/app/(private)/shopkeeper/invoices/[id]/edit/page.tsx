@@ -319,12 +319,12 @@ export default function EditInvoicePage() {
                     <div className="flex gap-2">
                         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
                             <ArrowLeft className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('common.back')}</span>
+                            <span>{t('common.back')}</span>
                         </Button>
                         <Button variant="outline" onClick={handlePreview}
-                            disabled={updateMutation.isPending} className="gap-2">
+                            disabled={updateMutation.isPending} className="gap-2 border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600">
                             <Eye className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('invoices.preview')}</span>
+                            <span>{t('invoices.preview')}</span>
                         </Button>
                         <Button
                             onClick={() => handleSubmit(formData.status as 'draft' | 'sent')}

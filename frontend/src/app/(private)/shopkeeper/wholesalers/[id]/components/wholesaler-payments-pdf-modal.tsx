@@ -159,7 +159,7 @@ export function WholesalerPaymentsPdfModal({ open, onOpenChange, wholesaler, fil
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] sm:max-w-4xl h-[85vh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none sm:border">
+            <DialogContent className="w-[95vw] sm:max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none sm:border">
                 <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex flex-row items-center justify-between space-y-0 bg-white z-20">
                     <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                         <Printer className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />

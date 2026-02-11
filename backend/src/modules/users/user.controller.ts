@@ -146,20 +146,15 @@ export class UserController {
     async getInvoicePreferences(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?._id;
-            console.log('🔍 GET /invoice-preferences - User ID:', userId);
-            console.log('🔍 Full user object:', req.user);
 
             if (!userId) {
-                console.log('❌ No userId in request');
                 sendError(res, 'Unauthorized', 401);
                 return;
             }
 
             const preferences = await userService.getInvoicePreferences(userId);
-            console.log('📤 Sending preferences to client:', preferences);
             sendSuccess(res, preferences, 'Invoice preferences retrieved successfully');
         } catch (error: any) {
-            console.error('❌ Error in getInvoicePreferences:', error);
             if (error.message === 'User not found') {
                 sendError(res, error.message, 404);
             } else {
@@ -171,20 +166,16 @@ export class UserController {
     async updateInvoicePreferences(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?._id;
-            console.log('🔍 PATCH /invoice-preferences - User ID:', userId);
-            console.log('📥 Request body:', req.body);
 
             if (!userId) {
-                console.log('❌ No userId in request');
                 sendError(res, 'Unauthorized', 401);
                 return;
             }
 
             const preferences = await userService.updateInvoicePreferences(userId, req.body);
-            console.log('📤 Sending updated preferences to client:', preferences);
+
             sendSuccess(res, preferences, 'Invoice preferences updated successfully');
         } catch (error: any) {
-            console.error('❌ Error in updateInvoicePreferences:', error);
             if (error.message === 'User not found') {
                 sendError(res, error.message, 404);
             } else {

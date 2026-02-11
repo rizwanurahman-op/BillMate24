@@ -191,14 +191,22 @@ export default function CreateInvoicePage() {
 
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewInvoiceId, setPreviewInvoiceId] = useState<string | null>(null);
+    const [isPreviewing, setIsPreviewing] = useState(false);
 
     const createMutation = useMutation({
         mutationFn: (data: CreateInvoiceInput) => invoiceApi.create(data),
         onSuccess: (invoice) => {
             queryClient.invalidateQueries({ queryKey: ['invoices'] });
-            // Show PDF preview for user to confirm
-            setPreviewInvoiceId(invoice._id);
-            setPreviewOpen(true);
+
+            if (isPreviewing) {
+                // Show PDF preview for user to confirm
+                setPreviewInvoiceId(invoice._id);
+                setPreviewOpen(true);
+                setIsPreviewing(false);
+            } else {
+                toast.success(t('invoices.messages.success_create'));
+                resetForm();
+            }
         },
         onError: (error: any) => {
             const errorMessage = error?.response?.data?.error || error?.response?.data?.message || t('invoices.messages.error_create');
@@ -306,6 +314,7 @@ export default function CreateInvoicePage() {
     };
 
     const handleSubmit = (status: 'draft' | 'sent') => {
+        setIsPreviewing(false);
         if (!formData.customerName) {
             toast.error(t('invoices.validation.customer_name_required'));
             return;
@@ -342,6 +351,7 @@ export default function CreateInvoicePage() {
     };
 
     const handlePreview = () => {
+        setIsPreviewing(true);
         if (!formData.customerName) {
             toast.error(t('invoices.validation.customer_name_required'));
             return;
@@ -418,12 +428,12 @@ export default function CreateInvoicePage() {
                     <div className="flex gap-2">
                         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
                             <ArrowLeft className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('common.back')}</span>
+                            <span>{t('common.back')}</span>
                         </Button>
                         <Button variant="outline" onClick={handlePreview}
-                            disabled={createMutation.isPending} className="gap-2">
+                            disabled={createMutation.isPending} className="gap-2 border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600">
                             <Eye className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('invoices.preview')}</span>
+                            <span>{t('invoices.preview')}</span>
                         </Button>
                         <Button
                             onClick={() => handleSubmit('sent')}

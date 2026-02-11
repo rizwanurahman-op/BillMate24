@@ -121,7 +121,7 @@ export function DueCustomerPaymentsPdfModal({ open, onOpenChange, customer, filt
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogContent className="w-[95vw] sm:max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col p-0 border-none sm:border overflow-hidden">
                 <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between space-y-0">
                     <DialogTitle className="flex items-center gap-2">
                         <Printer className="h-5 w-5 text-emerald-600" />

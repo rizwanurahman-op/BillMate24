@@ -530,7 +530,6 @@ export class UserService {
 
 
     async getInvoicePreferences(userId: string): Promise<InvoicePreferences> {
-        console.log('📖 Getting invoice preferences for user:', userId);
         const user = await User.findById(userId).select('invoicePreferences');
 
         if (!user) {
@@ -547,14 +546,10 @@ export class UserService {
             terms: '',
         };
 
-        console.log('✅ Retrieved preferences:', preferences);
         return preferences;
     }
 
     async updateInvoicePreferences(userId: string, preferences: Partial<InvoicePreferences>): Promise<InvoicePreferences> {
-        console.log('💾 Updating invoice preferences for user:', userId);
-        console.log('📝 New preferences:', preferences);
-
         const user = await User.findByIdAndUpdate(
             userId,
             { $set: { invoicePreferences: preferences } },
@@ -564,8 +559,6 @@ export class UserService {
         if (!user) {
             throw new Error('User not found');
         }
-
-        console.log('✅ Preferences updated successfully:', user.invoicePreferences);
 
         return user.invoicePreferences || {
             signatureEnabled: false,
