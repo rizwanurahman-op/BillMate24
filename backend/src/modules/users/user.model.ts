@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IUser, Features } from '../../types';
+import { IUser, Features, InvoicePreferences } from '../../types';
 
 const featuresSchema = new Schema<Features>(
     {
@@ -8,6 +8,19 @@ const featuresSchema = new Schema<Features>(
         normalCustomers: { type: Boolean, default: true },
         billing: { type: Boolean, default: true },
         reports: { type: Boolean, default: true },
+    },
+    { _id: false }
+);
+
+const invoicePreferencesSchema = new Schema<InvoicePreferences>(
+    {
+        signatureEnabled: { type: Boolean, default: false },
+        signature: { type: String },
+        signatureName: { type: String },
+        notesEnabled: { type: Boolean, default: false },
+        notes: { type: String },
+        termsEnabled: { type: Boolean, default: false },
+        terms: { type: String },
     },
     { _id: false }
 );
@@ -60,6 +73,18 @@ const userSchema = new Schema<IUser & Document>(
                 normalCustomers: true,
                 billing: true,
                 reports: true,
+            }),
+        },
+        invoicePreferences: {
+            type: invoicePreferencesSchema,
+            default: () => ({
+                signatureEnabled: false,
+                signature: '',
+                signatureName: '',
+                notesEnabled: false,
+                notes: '',
+                termsEnabled: false,
+                terms: '',
             }),
         },
         isActive: {

@@ -43,10 +43,13 @@ export interface Invoice {
     logo?: string;
     signature?: string;
     signatureName?: string;
+    signatureEnabled?: boolean;
 
     // Notes
     notes?: string;
+    notesEnabled?: boolean;
     terms?: string;
+    termsEnabled?: boolean;
 
     // Metadata
     status: 'draft' | 'sent' | 'paid' | 'cancelled';
@@ -91,10 +94,13 @@ export interface CreateInvoiceInput {
     logo?: string;
     signature?: string;
     signatureName?: string;
+    signatureEnabled?: boolean;
 
     // Notes
     notes?: string;
+    notesEnabled?: boolean;
     terms?: string;
+    termsEnabled?: boolean;
 
     // Status
     status?: 'draft' | 'sent' | 'paid' | 'cancelled';

@@ -43,10 +43,13 @@ export const createInvoiceSchema = z.object({
     logo: z.string().optional(),
     signature: z.string().optional(),
     signatureName: z.string().optional(),
+    signatureEnabled: z.boolean().optional(),
 
     // Notes
     notes: z.string().optional(),
+    notesEnabled: z.boolean().optional(),
     terms: z.string().optional(),
+    termsEnabled: z.boolean().optional(),
 
     // Status
     status: z.enum(['draft', 'sent', 'paid', 'cancelled']).optional(),
@@ -87,10 +90,13 @@ export const updateInvoiceSchema = z.object({
     logo: z.string().optional(),
     signature: z.string().optional(),
     signatureName: z.string().optional(),
+    signatureEnabled: z.boolean().optional(),
 
     // Notes
     notes: z.string().optional(),
+    notesEnabled: z.boolean().optional(),
     terms: z.string().optional(),
+    termsEnabled: z.boolean().optional(),
 
     // Status
     status: z.enum(['draft', 'sent', 'paid', 'cancelled']).optional(),

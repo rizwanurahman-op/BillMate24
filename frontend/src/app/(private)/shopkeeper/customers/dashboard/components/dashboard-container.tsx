@@ -92,7 +92,11 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
     const endDate = format(dateRange.endDate, 'yyyy-MM-dd');
 
     // Fetch due customers
-    const { data: dueCustomersData, isFetching: customersFetching } = useQuery({
+    const {
+        data: dueCustomersData,
+        isFetching: customersFetching,
+        isError: customersError
+    } = useQuery({
         queryKey: ['due-customers-all'],
         queryFn: async () => {
             const response = await api.get('/customers?type=due&limit=100');
@@ -100,7 +104,7 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
         },
         initialData: initialData ? { data: initialData.dueCustomers } : undefined,
         staleTime: 30000,
-        retry: 0,
+        retry: 1,
     });
 
     // Fetch aggregate stats
@@ -117,7 +121,11 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
     });
 
     // Fetch sales for selected period
-    const { data: salesData, isLoading: salesLoading } = useQuery({
+    const {
+        data: salesData,
+        isLoading: salesLoading,
+        isError: salesError
+    } = useQuery({
         queryKey: ['sales-filtered', startDate, endDate],
         queryFn: async () => {
             const response = await api.get(`/bills?billType=sale&startDate=${startDate}&endDate=${endDate}&limit=100`);
@@ -125,7 +133,7 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
         },
         initialData: timeFilter === 'today' && initialData ? { data: initialData.todaySales } : undefined,
         staleTime: 30000,
-        retry: 0,
+        retry: 1,
     });
 
     // Fetch customer payments for selected period
@@ -188,8 +196,10 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
         );
     }
 
-    // Show error state
-    if (!dueCustomersData || !salesData) {
+    // Show error state - only if we have an actual error and no data to show
+    const isCriticalError = (customersError && !dueCustomersData) || (salesError && !salesData);
+
+    if (isCriticalError && !customersFetching && !salesLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-purple-50/20 flex items-center justify-center p-6">
                 <div className={cn(

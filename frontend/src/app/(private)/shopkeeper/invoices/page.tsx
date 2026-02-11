@@ -407,15 +407,12 @@ export default function InvoicesPage() {
                                             {invoices.map((invoice) => (
                                                 <TableRow key={invoice._id} className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 transition-all duration-200 border-b border-gray-100">
                                                     <TableCell>
-                                                        <div
-                                                            className="flex items-center gap-3 cursor-pointer group"
-                                                            onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}`)}
-                                                        >
-                                                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 group-hover:from-blue-600 group-hover:to-indigo-700 transition-all shadow-sm group-hover:shadow-md">
+                                                        <div className="flex items-center gap-3 group">
+                                                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 transition-all shadow-sm">
                                                                 <FileText className="h-4 w-4 text-white" />
                                                             </div>
                                                             <div>
-                                                                <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                                                                <p className="font-bold text-gray-900">
                                                                     {invoice.invoiceNumber}
                                                                 </p>
                                                             </div>
@@ -485,13 +482,6 @@ export default function InvoicesPage() {
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="w-48">
                                                                     <DropdownMenuItem
-                                                                        onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}`)}
-                                                                        className="cursor-pointer"
-                                                                    >
-                                                                        <Eye className="mr-2 h-4 w-4 text-blue-600" />
-                                                                        {t('invoices.table.view')}
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
                                                                         onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}/edit`)}
                                                                         className="cursor-pointer"
                                                                     >
@@ -535,8 +525,7 @@ export default function InvoicesPage() {
                                     {invoices.map((invoice) => (
                                         <div
                                             key={invoice._id}
-                                            className="bg-white rounded-2xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 overflow-hidden border border-gray-100"
-                                            onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}`)}
+                                            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-100"
                                         >
                                             {/* Header with Gradient */}
                                             <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-4 border-b border-gray-100">
@@ -575,10 +564,6 @@ export default function InvoicesPage() {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="w-48">
-                                                                    <DropdownMenuItem onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}`)} className="cursor-pointer">
-                                                                        <Eye className="mr-2 h-4 w-4 text-blue-600" />
-                                                                        {t('invoices.table.view')}
-                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => router.push(`/shopkeeper/invoices/${invoice._id}/edit`)} className="cursor-pointer">
                                                                         <Edit className="mr-2 h-4 w-4 text-purple-600" />
                                                                         {t('invoices.table.edit')}

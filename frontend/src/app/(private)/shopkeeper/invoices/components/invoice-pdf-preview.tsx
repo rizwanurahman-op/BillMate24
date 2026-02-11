@@ -66,44 +66,39 @@ export function InvoicePdfPreview({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] w-[95vw] h-[95vh] p-0 flex flex-col">
                 {/* Header */}
-                <DialogHeader className="px-6 py-4 border-b flex-shrink-0 bg-gradient-to-r from-blue-50 to-purple-50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b flex-shrink-0 bg-gradient-to-r from-blue-50 to-purple-50">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="w-full md:w-auto">
+                            <DialogTitle className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                 Invoice Preview
                             </DialogTitle>
                             <p className="text-sm text-gray-600 mt-1">{invoiceNumber}</p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
                             {status === 'draft' && onFinalize && (
                                 <Button
-                                    variant="default"
-                                    size="sm"
                                     onClick={onFinalize}
-                                    className="gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                    className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-xs md:text-sm h-9 md:h-10 px-3"
                                 >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    Finalize Invoice
+                                    Finalize
                                 </Button>
                             )}
                             <Button
                                 variant="outline"
-                                size="sm"
                                 onClick={handleShare}
-                                className="gap-2"
+                                className="flex-1 md:flex-none gap-2 text-xs md:text-sm h-9 md:h-10 px-3"
                             >
-                                <Share2 className="w-4 h-4" />
+                                <Share2 className="w-3 h-3 md:w-4 md:h-4" />
                                 Share
                             </Button>
                             <Button
-                                variant="default"
-                                size="sm"
                                 onClick={handleDownload}
-                                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                                className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-xs md:text-sm h-9 md:h-10 px-3"
                             >
-                                <Download className="w-4 h-4" />
+                                <Download className="w-3 h-3 md:w-4 md:h-4" />
                                 Download PDF
                             </Button>
                         </div>

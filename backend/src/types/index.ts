@@ -10,6 +10,17 @@ export interface Features {
     reports: boolean;
 }
 
+// Invoice Preferences
+export interface InvoicePreferences {
+    signatureEnabled: boolean;
+    signature?: string;
+    signatureName?: string;
+    notesEnabled: boolean;
+    notes?: string;
+    termsEnabled: boolean;
+    terms?: string;
+}
+
 // User interface
 export interface IUser {
     _id: string;
@@ -22,6 +33,7 @@ export interface IUser {
     address?: string;
     place?: string;
     features: Features;
+    invoicePreferences?: InvoicePreferences;
     isActive: boolean;
     refreshToken?: string;
     resetPasswordOTP?: string;

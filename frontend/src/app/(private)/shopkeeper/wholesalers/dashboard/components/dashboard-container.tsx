@@ -89,7 +89,11 @@ export default function WholesalerDashboardContainer({ initialData }: Wholesaler
     const endDate = format(dateRange.endDate, 'yyyy-MM-dd');
 
     // Fetch all wholesalers (for count only)
-    const { data: wholesalersData, isFetching: wholesalersFetching } = useQuery({
+    const {
+        data: wholesalersData,
+        isFetching: wholesalersFetching,
+        isError: wholesalersError
+    } = useQuery({
         queryKey: ['wholesalers-all'],
         queryFn: async () => {
             const response = await api.get('/wholesalers?limit=100');
@@ -97,11 +101,15 @@ export default function WholesalerDashboardContainer({ initialData }: Wholesaler
         },
         initialData: initialData ? { data: initialData.wholesalers } : undefined,
         staleTime: 30000,
-        retry: 0,
+        retry: 1,
     });
 
     // Fetch purchases for selected period
-    const { data: purchasesData, isLoading: purchasesLoading } = useQuery({
+    const {
+        data: purchasesData,
+        isLoading: purchasesLoading,
+        isError: purchasesError
+    } = useQuery({
         queryKey: ['purchases-filtered', startDate, endDate],
         queryFn: async () => {
             const response = await api.get(`/bills?billType=purchase&startDate=${startDate}&endDate=${endDate}&limit=100`);
@@ -109,7 +117,7 @@ export default function WholesalerDashboardContainer({ initialData }: Wholesaler
         },
         initialData: timeFilter === 'today' && initialData ? { data: initialData.todayPurchases } : undefined,
         staleTime: 30000,
-        retry: 0,
+        retry: 1,
     });
 
     // Fetch wholesaler payments for selected period
@@ -209,8 +217,10 @@ export default function WholesalerDashboardContainer({ initialData }: Wholesaler
         );
     }
 
-    // Show error state
-    if (!wholesalersData || !purchasesData) {
+    // Show error state - only if we have an actual error and no data to show
+    const isCriticalError = (wholesalersError && !wholesalersData) || (purchasesError && !purchasesData);
+
+    if (isCriticalError && !wholesalersFetching && !purchasesLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-indigo-50/20 flex items-center justify-center p-6">
                 <div className={cn(

@@ -1,7 +1,7 @@
 import { User } from './user.model';
 import { hashPassword } from '../../utils/auth';
 import { CreateShopkeeperInput, UpdateShopkeeperInput, UpdateFeaturesInput } from './user.validation';
-import { IUser, Features } from '../../types';
+import { IUser, Features, InvoicePreferences } from '../../types';
 import { Bill } from '../bills/bill.model';
 import { Customer } from '../customers/customer.model';
 import { Wholesaler } from '../wholesalers/wholesaler.model';
@@ -525,6 +525,56 @@ export class UserService {
                     ? this.formatBytes(comparisons.reduce((sum, s) => sum + s.storage.totalBytes, 0) / comparisons.length)
                     : '0 Bytes'
             }
+        };
+    }
+
+
+    async getInvoicePreferences(userId: string): Promise<InvoicePreferences> {
+        console.log('📖 Getting invoice preferences for user:', userId);
+        const user = await User.findById(userId).select('invoicePreferences');
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const preferences = user.invoicePreferences || {
+            signatureEnabled: false,
+            signature: '',
+            signatureName: '',
+            notesEnabled: false,
+            notes: '',
+            termsEnabled: false,
+            terms: '',
+        };
+
+        console.log('✅ Retrieved preferences:', preferences);
+        return preferences;
+    }
+
+    async updateInvoicePreferences(userId: string, preferences: Partial<InvoicePreferences>): Promise<InvoicePreferences> {
+        console.log('💾 Updating invoice preferences for user:', userId);
+        console.log('📝 New preferences:', preferences);
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $set: { invoicePreferences: preferences } },
+            { new: true }
+        ).select('invoicePreferences');
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        console.log('✅ Preferences updated successfully:', user.invoicePreferences);
+
+        return user.invoicePreferences || {
+            signatureEnabled: false,
+            signature: '',
+            signatureName: '',
+            notesEnabled: false,
+            notes: '',
+            termsEnabled: false,
+            terms: '',
         };
     }
 

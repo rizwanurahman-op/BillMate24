@@ -43,10 +43,13 @@ export interface InvoiceDocument extends Document {
     colorScheme?: string;
     signature?: string;
     signatureName?: string;
+    signatureEnabled?: boolean;
 
     // Notes
     notes?: string;
+    notesEnabled?: boolean;
     terms?: string;
+    termsEnabled?: boolean;
 
     // Metadata
     status: 'draft' | 'sent' | 'paid' | 'cancelled';
@@ -189,15 +192,27 @@ const invoiceSchema = new Schema(
         signatureName: {
             type: String,
         },
+        signatureEnabled: {
+            type: Boolean,
+            default: false,
+        },
 
         // Notes
         notes: {
             type: String,
             trim: true,
         },
+        notesEnabled: {
+            type: Boolean,
+            default: false,
+        },
         terms: {
             type: String,
             trim: true,
+        },
+        termsEnabled: {
+            type: Boolean,
+            default: false,
         },
 
         // Metadata

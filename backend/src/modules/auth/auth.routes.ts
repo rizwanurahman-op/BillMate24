@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authController } from './auth.controller';
+import { userController } from '../users/user.controller';
 import { authenticate, authRateLimiter } from '../../middlewares';
 
 const router = Router();
@@ -14,6 +15,10 @@ router.post('/logout', authenticate, authController.logout.bind(authController))
 router.post('/change-password', authenticate, authController.changePassword.bind(authController));
 router.get('/profile', authenticate, authController.getProfile.bind(authController));
 router.patch('/profile', authenticate, authController.updateProfile.bind(authController));
+
+// Invoice preferences routes (Protected)
+router.get('/invoice-preferences', authenticate, userController.getInvoicePreferences.bind(userController));
+router.patch('/invoice-preferences', authenticate, userController.updateInvoicePreferences.bind(userController));
 
 // Password recovery routes (Public)
 router.post('/forgot-password', authRateLimiter, authController.forgotPassword.bind(authController));
