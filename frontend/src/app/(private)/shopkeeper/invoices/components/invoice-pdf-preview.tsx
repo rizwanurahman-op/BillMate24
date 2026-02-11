@@ -3,8 +3,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '@/config/axios';
+import { PdfViewer } from '@/components/app/pdf-viewer';
 
 interface InvoicePdfPreviewProps {
     open: boolean;
@@ -28,23 +29,47 @@ export function InvoicePdfPreview({
     onFinalize,
 }: InvoicePdfPreviewProps) {
     const [loading, setLoading] = useState(true);
+    const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    // Get the base URL from axios config
-    const apiBaseUrl = api.defaults.baseURL || 'http://localhost:5000/api';
-
-    // Get access token from cookies for iframe authentication
-    const getAccessToken = () => {
-        if (typeof document !== 'undefined') {
-            const cookies = document.cookie.split(';');
-            const tokenCookie = cookies.find(c => c.trim().startsWith('accessToken='));
-            return tokenCookie ? tokenCookie.split('=')[1] : null;
+    useEffect(() => {
+        if (open) {
+            loadPdf();
+        } else {
+            if (pdfBlobUrl) {
+                URL.revokeObjectURL(pdfBlobUrl);
+                setPdfBlobUrl(null);
+            }
         }
-        return null;
+        return () => {
+            if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+        };
+    }, [open, invoiceId, templateId, colorScheme]);
+
+    const loadPdf = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.get(`/invoices/${invoiceId}/pdf`, {
+                params: {
+                    template: templateId,
+                    color: colorScheme
+                },
+                responseType: 'blob'
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            setPdfBlobUrl(url);
+            setLoading(false);
+        } catch (err: any) {
+            console.error('PDF load error:', err);
+            setError('Failed to load PDF. Please try again.');
+            setLoading(false);
+        }
     };
 
-    const token = getAccessToken();
-    const pdfUrl = `${apiBaseUrl}/invoices/${invoiceId}/pdf?template=${templateId}&color=${colorScheme}&token=${token}`;
-    const downloadUrl = `${apiBaseUrl}/invoices/${invoiceId}/download?template=${templateId}&color=${colorScheme}&token=${token}`;
+    const downloadUrl = api.defaults.baseURL + `/invoices/${invoiceId}/download?template=${templateId}&color=${colorScheme}`;
 
     const handleDownload = () => {
         window.open(downloadUrl, '_blank');
@@ -64,7 +89,7 @@ export function InvoicePdfPreview({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[95vw] w-[95vw] h-[95vh] p-0 flex flex-col">
+            <DialogContent className="max-w-[95vw] w-[95vw] h-[85vh] sm:h-[90vh] p-0 flex flex-col overflow-hidden">
                 {/* Header */}
                 <DialogHeader className="px-4 md:px-6 py-4 border-b flex-shrink-0 bg-gradient-to-r from-blue-50 to-purple-50">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -107,20 +132,26 @@ export function InvoicePdfPreview({
 
                 {/* PDF Viewer */}
                 <div className="flex-1 overflow-hidden relative bg-gray-100">
-                    {loading && (
+                    {loading && !pdfBlobUrl && (
                         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
                             <div className="text-center">
                                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                                <p className="text-gray-600">Loading PDF...</p>
+                                <p className="text-gray-600 font-medium tracking-wide">Preparing Preview...</p>
                             </div>
                         </div>
                     )}
-                    <iframe
-                        src={`${pdfUrl}#toolbar=0`}
-                        className="w-full h-full border-0"
-                        title="Invoice PDF Preview"
-                        onLoad={() => setLoading(false)}
-                    />
+
+                    {error ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white p-6 text-center">
+                            <div className="bg-red-50 p-4 rounded-full mb-4">
+                                <X className="h-8 w-8 text-red-500" />
+                            </div>
+                            <p className="text-gray-900 font-semibold mb-2">{error}</p>
+                            <Button variant="outline" onClick={loadPdf}>Try Again</Button>
+                        </div>
+                    ) : pdfBlobUrl ? (
+                        <PdfViewer url={pdfBlobUrl} title="Invoice PDF Preview" />
+                    ) : null}
                 </div>
             </DialogContent>
         </Dialog>

@@ -8,12 +8,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Loader2, X } from 'lucide-react';
+import { Printer, Download, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import api from '@/config/axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { PdfViewer } from '@/components/app/pdf-viewer';
 
 interface WholesalerPdfModalProps {
     open: boolean;
@@ -210,7 +211,7 @@ export function WholesalerPdfModal({ open, onOpenChange, filters }: WholesalerPd
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] sm:max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none sm:border">
+            <DialogContent className="w-[95vw] sm:max-w-4xl h-[85vh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none sm:border">
                 <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex flex-row items-center justify-between space-y-0 bg-white z-20">
                     <DialogTitle className="flex items-center gap-2 text-base sm:text-lg truncate mr-2">
                         <Printer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 shrink-0" />
@@ -238,17 +239,19 @@ export function WholesalerPdfModal({ open, onOpenChange, filters }: WholesalerPd
                 </DialogHeader>
 
                 <div className="flex-1 bg-gray-50 p-2 sm:p-4 overflow-hidden relative flex flex-col">
-                    {loading ? (
+                    {loading && !pdfDataUrl && (
                         <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-30">
                             <div className="flex flex-col items-center gap-3">
                                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                                 <p className="text-sm font-medium text-gray-600 italic">Preparing Report Data...</p>
                             </div>
                         </div>
-                    ) : error ? (
+                    )}
+
+                    {error ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-6 bg-white rounded-xl shadow-inner border border-red-50">
                             <div className="bg-red-50 p-3 rounded-full mb-3 text-red-500">
-                                <X className="h-6 w-6" />
+                                <AlertCircle className="h-6 w-6" />
                             </div>
                             <p className="text-red-600 font-medium mb-2">{error}</p>
                             <Button variant="outline" size="sm" onClick={generatePdf}>
@@ -256,21 +259,8 @@ export function WholesalerPdfModal({ open, onOpenChange, filters }: WholesalerPd
                             </Button>
                         </div>
                     ) : pdfDataUrl ? (
-                        <div className="w-full h-full rounded-lg overflow-hidden border shadow-sm bg-white relative">
-                            <div className="sm:hidden absolute top-2 right-2 z-10 opacity-60 pointer-events-none bg-black/10 px-2 py-1 rounded text-[10px] text-gray-600 flex items-center gap-1">
-                                <span className="animate-pulse">●</span> PDF View
-                            </div>
-                            <iframe
-                                src={`${pdfDataUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                                className="w-full h-full"
-                                title="Wholesaler Report Preview"
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400 italic">
-                            No preview available
-                        </div>
-                    )}
+                        <PdfViewer url={pdfDataUrl} title="Wholesaler Report Preview" />
+                    ) : null}
                 </div>
 
                 <div className="sm:hidden p-3 border-t bg-white flex justify-center">

@@ -8,12 +8,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Loader2, X } from 'lucide-react';
+import { Printer, Download, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import api from '@/config/axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { PdfViewer } from '@/components/app/pdf-viewer';
 import { FilterState } from './sales-filters';
 
 interface DueCustomerPaymentsPdfModalProps {
@@ -121,7 +122,7 @@ export function DueCustomerPaymentsPdfModal({ open, onOpenChange, customer, filt
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] sm:max-w-4xl h-[95vh] sm:h-[90vh] flex flex-col p-0 border-none sm:border overflow-hidden">
+            <DialogContent className="w-[95vw] sm:max-w-4xl h-[85vh] sm:h-[90vh] flex flex-col p-0 border-none sm:border overflow-hidden">
                 <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between space-y-0">
                     <DialogTitle className="flex items-center gap-2">
                         <Printer className="h-5 w-5 text-emerald-600" />
@@ -146,16 +147,24 @@ export function DueCustomerPaymentsPdfModal({ open, onOpenChange, customer, filt
                     </div>
                 </DialogHeader>
                 <div className="flex-1 bg-gray-100 p-4 relative">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center h-full gap-2">
-                            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-                            <p className="text-sm text-gray-500">Generating PDF...</p>
+                    {loading && !pdfDataUrl && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-30">
+                            <div className="flex flex-col items-center gap-3">
+                                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                                <p className="text-sm font-medium text-gray-600 italic">Preparing Payments History...</p>
+                            </div>
                         </div>
-                    ) : error ? (
-                        <div className="flex items-center justify-center h-full text-red-500">{error}</div>
-                    ) : (
-                        <iframe src={pdfDataUrl!} className="w-full h-full rounded border" />
                     )}
+
+                    {error ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-6 bg-white rounded-xl border-red-50">
+                            <AlertCircle className="h-10 w-10 text-red-500 mb-2" />
+                            <p className="text-red-600 font-medium">{error}</p>
+                            <Button variant="outline" size="sm" onClick={generatePdf} className="mt-4">Try Again</Button>
+                        </div>
+                    ) : pdfDataUrl ? (
+                        <PdfViewer url={pdfDataUrl} title="Payments Preview" />
+                    ) : null}
                 </div>
             </DialogContent>
         </Dialog>
