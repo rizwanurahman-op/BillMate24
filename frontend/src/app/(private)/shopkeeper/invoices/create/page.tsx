@@ -424,27 +424,26 @@ export default function CreateInvoicePage() {
                             <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                         </div>
                         <p className="text-gray-600 text-sm md:text-base mt-0.5 md:mt-1 flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">{t('invoices.status_draft')}</Badge>
                             {t('invoices.create_subtitle')}
                         </p>
                     </div>
-                    <div className="flex gap-2">
-                        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2 md:mt-0">
+                        <Button variant="ghost" onClick={() => router.back()} className="gap-2 px-2 md:px-4">
                             <ArrowLeft className="h-4 w-4" />
-                            <span>{t('common.back')}</span>
+                            <span className="hidden sm:inline">{t('common.back')}</span>
                         </Button>
                         <Button variant="outline" onClick={handlePreview}
-                            disabled={createMutation.isPending} className="gap-2 border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600">
+                            disabled={createMutation.isPending} className="gap-1 md:gap-2 px-2 md:px-4 border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600">
                             <Eye className="h-4 w-4" />
-                            <span>{t('invoices.preview')}</span>
+                            <span className="text-sm md:text-base">{t('invoices.preview')}</span>
                         </Button>
                         <Button
                             onClick={() => handleSubmit('sent')}
                             disabled={createMutation.isPending}
-                            className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                            className="gap-1 md:gap-2 px-3 md:px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                         >
                             <Save className="h-4 w-4" />
-                            {t('common.save')}
+                            <span className="text-sm md:text-base">{t('common.save')}</span>
                         </Button>
                     </div>
                 </div>
@@ -456,27 +455,24 @@ export default function CreateInvoicePage() {
                         <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto h-auto p-1.5 bg-white/80 backdrop-blur-md border-2 border-gray-100 rounded-2xl shadow-xl">
                             <TabsTrigger
                                 value="invoice"
-                                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white py-3.5 px-4 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
+                                className="gap-1 md:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white py-2.5 md:py-3.5 px-2 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
                             >
-                                <FileText className="h-4 w-4" />
-                                <span className="hidden sm:inline">Create Invoice</span>
-                                <span className="sm:hidden">Invoice</span>
+                                <FileText className="hidden sm:block h-4 w-4" />
+                                <span className="text-[11px] sm:text-sm md:text-base truncate">{t('invoices.invoice_details')}</span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="signature"
-                                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white py-3.5 px-4 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
+                                className="gap-1 md:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white py-2.5 md:py-3.5 px-2 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
                             >
-                                <PenTool className="h-4 w-4" />
-                                <span className="hidden sm:inline">Signature</span>
-                                <span className="sm:hidden">Sign</span>
+                                <PenTool className="hidden sm:block h-4 w-4" />
+                                <span className="text-[11px] sm:text-sm md:text-base truncate">{t('invoices.signature')}</span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="notes"
-                                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-orange-600 data-[state=active]:text-white py-3.5 px-4 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
+                                className="gap-1 md:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-orange-600 data-[state=active]:text-white py-2.5 md:py-3.5 px-2 md:px-6 rounded-xl font-bold transition-all duration-300 hover:bg-gray-50/50"
                             >
-                                <StickyNote className="h-4 w-4" />
-                                <span className="hidden sm:inline">Notes & Terms</span>
-                                <span className="sm:hidden">Notes</span>
+                                <StickyNote className="hidden sm:block h-4 w-4" />
+                                <span className="text-[11px] sm:text-sm md:text-base truncate">{t('invoices.notes_terms')}</span>
                             </TabsTrigger>
                         </TabsList>
 
@@ -1373,16 +1369,16 @@ export default function CreateInvoicePage() {
                                             </div>
                                             <div>
                                                 <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent">
-                                                    Signature Settings
+                                                    {t('invoices.signature_settings')}
                                                 </CardTitle>
                                                 <p className="text-sm text-gray-600 mt-1">
-                                                    Add your professional signature to invoices
+                                                    {t('invoices.signature_desc')}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border-2 border-purple-200 shadow-sm">
                                             <Label htmlFor="signature-toggle" className="text-sm font-bold text-gray-700 cursor-pointer">
-                                                Enable Signature
+                                                {t('invoices.enable_signature')}
                                             </Label>
                                             <Switch
                                                 id="signature-toggle"
@@ -1400,7 +1396,7 @@ export default function CreateInvoicePage() {
                                                 <div className="space-y-4">
                                                     <Label className="text-base font-bold text-gray-800 flex items-center gap-2">
                                                         <div className="w-2 h-4 bg-purple-500 rounded-full"></div>
-                                                        Draw Your Signature
+                                                        {t('invoices.draw_signature')}
                                                     </Label>
                                                     <SignaturePad
                                                         initialSignature={formData.signature}
@@ -1409,7 +1405,7 @@ export default function CreateInvoicePage() {
                                                     />
                                                     <p className="text-xs text-gray-500 flex items-start gap-2">
                                                         <span className="text-purple-600">💡</span>
-                                                        <span>Draw your signature using mouse or touch. It will appear on your invoices.</span>
+                                                        <span>{t('invoices.signature_tip_desc')}</span>
                                                     </p>
                                                 </div>
 
@@ -1418,17 +1414,17 @@ export default function CreateInvoicePage() {
                                                     <div className="space-y-3">
                                                         <Label htmlFor="signatureName" className="text-base font-bold text-gray-800 flex items-center gap-2">
                                                             <div className="w-2 h-4 bg-indigo-500 rounded-full"></div>
-                                                            Signature Name/Title
+                                                            {t('invoices.signature_name_title')}
                                                         </Label>
                                                         <Input
                                                             id="signatureName"
                                                             value={formData.signatureName}
                                                             onChange={(e) => handleInputChange('signatureName', e.target.value)}
-                                                            placeholder="e.g., Authorized Signatory"
+                                                            placeholder={t('invoices.signature_name_placeholder')}
                                                             className="h-14 text-base border-2 border-gray-200 focus:border-indigo-500 rounded-xl font-medium"
                                                         />
                                                         <p className="text-xs text-gray-500">
-                                                            This will appear below your signature
+                                                            {t('invoices.signature_name_help')}
                                                         </p>
                                                     </div>
 
@@ -1440,10 +1436,10 @@ export default function CreateInvoicePage() {
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-bold text-purple-900 mb-2">
-                                                                    Professional Appearance
+                                                                    {t('invoices.signature_pro_appearance')}
                                                                 </p>
                                                                 <p className="text-xs text-purple-700 leading-relaxed">
-                                                                    Your signature adds authenticity and professionalism to your invoices.
+                                                                    {t('invoices.signature_pro_desc')}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -1456,16 +1452,16 @@ export default function CreateInvoicePage() {
                                             <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full mb-6 shadow-inner">
                                                 <FileSignature className="h-12 w-12 text-purple-600" />
                                             </div>
-                                            <h3 className="text-xl font-bold text-gray-900 mb-3">Signature is Disabled</h3>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3">{t('invoices.signature_disabled')}</h3>
                                             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                                                Enable signature to add your professional signature to invoices.
+                                                {t('invoices.signature_disabled_desc')}
                                             </p>
                                             <Button
                                                 onClick={() => handleInputChange('signatureEnabled', true)}
                                                 className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 gap-2"
                                             >
                                                 <PenTool className="h-4 w-4" />
-                                                Enable Signature
+                                                {t('invoices.enable_signature')}
                                             </Button>
                                         </div>
                                     )}
@@ -1513,13 +1509,13 @@ export default function CreateInvoicePage() {
                                                 <div className="space-y-3">
                                                     <Label htmlFor="notes" className="text-sm font-bold text-gray-800 flex items-center gap-2">
                                                         <div className="w-1.5 h-4 bg-amber-500 rounded-full"></div>
-                                                        Your Notes
+                                                        {t('invoices.your_notes')}
                                                     </Label>
                                                     <Textarea
                                                         id="notes"
                                                         value={formData.notes}
                                                         onChange={(e) => handleInputChange('notes', e.target.value)}
-                                                        placeholder="Enter your notes here..."
+                                                        placeholder={t('invoices.notes_placeholder_input')}
                                                         rows={6}
                                                         className="text-sm border-2 border-gray-200 focus:border-amber-500 rounded-xl resize-none bg-white font-medium leading-relaxed"
                                                     />
@@ -1528,7 +1524,7 @@ export default function CreateInvoicePage() {
                                                 {/* Quick Suggestions */}
                                                 <div className="space-y-3">
                                                     <Label className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                                                        Quick Suggestions
+                                                        {t('invoices.quick_suggestions')}
                                                     </Label>
                                                     <div className="grid grid-cols-1 gap-2">
                                                         {NOTES_SUGGESTIONS.map((suggestion, index) => (
@@ -1549,8 +1545,8 @@ export default function CreateInvoicePage() {
                                                 <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-100 rounded-xl mb-4">
                                                     <StickyNote className="h-10 w-10 text-amber-600" />
                                                 </div>
-                                                <h4 className="font-bold text-gray-900 mb-2">Notes Disabled</h4>
-                                                <p className="text-sm text-gray-600 mb-4">Enable to add notes to invoices</p>
+                                                <h4 className="font-bold text-gray-900 mb-2">{t('invoices.notes_disabled')}</h4>
+                                                <p className="text-sm text-gray-600 mb-4">{t('invoices.notes_disabled_desc')}</p>
                                                 <Button
                                                     size="sm"
                                                     onClick={() => {
@@ -1559,7 +1555,7 @@ export default function CreateInvoicePage() {
                                                     }}
                                                     className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700"
                                                 >
-                                                    Enable with Default
+                                                    {t('invoices.enable_with_default')}
                                                 </Button>
                                             </div>
                                         )}
@@ -1577,17 +1573,17 @@ export default function CreateInvoicePage() {
                                                     </div>
                                                     <div>
                                                         <CardTitle className="text-xl md:text-2xl font-bold text-gray-900">
-                                                            Terms & Conditions
+                                                            {t('invoices.terms')}
                                                         </CardTitle>
                                                         <p className="text-xs md:text-sm text-gray-600 mt-0.5">
-                                                            Set payment terms and policies
+                                                            {t('invoices.set_terms_policies')}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-xl border-2 border-teal-200 shadow-sm">
                                                 <Label htmlFor="terms-toggle" className="text-sm font-bold text-gray-700 cursor-pointer flex-1">
-                                                    Include Terms & Conditions
+                                                    {t('invoices.include_terms')}
                                                 </Label>
                                                 <Switch
                                                     id="terms-toggle"
@@ -1603,13 +1599,13 @@ export default function CreateInvoicePage() {
                                                 <div className="space-y-3">
                                                     <Label htmlFor="terms" className="text-sm font-bold text-gray-800 flex items-center gap-2">
                                                         <div className="w-1.5 h-4 bg-teal-500 rounded-full"></div>
-                                                        Your Terms
+                                                        {t('invoices.your_terms')}
                                                     </Label>
                                                     <Textarea
                                                         id="terms"
                                                         value={formData.terms}
                                                         onChange={(e) => handleInputChange('terms', e.target.value)}
-                                                        placeholder="Enter terms and conditions..."
+                                                        placeholder={t('invoices.terms_placeholder_input')}
                                                         rows={6}
                                                         className="text-sm border-2 border-gray-200 focus:border-teal-500 rounded-xl resize-none bg-white font-medium leading-relaxed"
                                                     />
@@ -1618,7 +1614,7 @@ export default function CreateInvoicePage() {
                                                 {/* Quick Suggestions */}
                                                 <div className="space-y-3">
                                                     <Label className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                                                        Quick Suggestions
+                                                        {t('invoices.quick_suggestions')}
                                                     </Label>
                                                     <div className="grid grid-cols-1 gap-2">
                                                         {TERMS_SUGGESTIONS.map((suggestion, index) => (
@@ -1639,8 +1635,8 @@ export default function CreateInvoicePage() {
                                                 <div className="inline-flex items-center justify-center w-20 h-20 bg-teal-100 rounded-xl mb-4">
                                                     <Shield className="h-10 w-10 text-teal-600" />
                                                 </div>
-                                                <h4 className="font-bold text-gray-900 mb-2">Terms Disabled</h4>
-                                                <p className="text-sm text-gray-600 mb-4">Enable to add terms to invoices</p>
+                                                <h4 className="font-bold text-gray-900 mb-2">{t('invoices.terms_disabled')}</h4>
+                                                <p className="text-sm text-gray-600 mb-4">{t('invoices.terms_disabled_desc')}</p>
                                                 <Button
                                                     size="sm"
                                                     onClick={() => {
@@ -1649,7 +1645,7 @@ export default function CreateInvoicePage() {
                                                     }}
                                                     className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
                                                 >
-                                                    Enable with Default
+                                                    {t('invoices.enable_with_default')}
                                                 </Button>
                                             </div>
                                         )}

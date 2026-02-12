@@ -75,7 +75,7 @@ export default function InvoicesPage() {
     // Search and filter state
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'sent' | 'paid' | 'cancelled'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'cancelled'>('all');
     const [currentPage, setCurrentPage] = useState(1);
 
     // Delete confirmation state
@@ -217,7 +217,7 @@ export default function InvoicesPage() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4 md:mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
                     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                         <CardContent className="p-3 md:p-5 relative">
                             <div className="flex items-start justify-between mb-2">
@@ -250,63 +250,6 @@ export default function InvoicesPage() {
                             <p className="text-xs text-gray-600 mb-1 font-medium">{t('invoices.stats.total_amount')}</p>
                             <p className="text-lg md:text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent truncate">
                                 {formatCurrency(stats.totalAmount)}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <CardContent className="p-3 md:p-5 relative">
-                            <div className="flex items-start justify-between mb-2">
-                                <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-gray-500 to-slate-600 shadow-md">
-                                    <svg className="h-4 w-4 md:h-5 md:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </div>
-                                <div className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-semibold">
-                                    Draft
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1 font-medium">{t('invoices.stats.draft_count')}</p>
-                            <p className="text-xl md:text-3xl font-black text-gray-700">
-                                {stats.draftCount}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <CardContent className="p-3 md:p-5 relative">
-                            <div className="flex items-start justify-between mb-2">
-                                <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-md">
-                                    <svg className="h-4 w-4 md:h-5 md:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                    </svg>
-                                </div>
-                                <div className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">
-                                    Sent
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1 font-medium">{t('invoices.stats.sent_count')}</p>
-                            <p className="text-xl md:text-3xl font-black text-blue-700">
-                                {stats.sentCount}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <CardContent className="p-3 md:p-5 relative">
-                            <div className="flex items-start justify-between mb-2">
-                                <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-md">
-                                    <svg className="h-4 w-4 md:h-5 md:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
-                                    Paid
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1 font-medium">{t('invoices.stats.paid_count')}</p>
-                            <p className="text-xl md:text-3xl font-black text-green-700">
-                                {stats.paidCount}
                             </p>
                         </CardContent>
                     </Card>
@@ -359,8 +302,6 @@ export default function InvoicesPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">{t('invoices.filters.all_status')}</SelectItem>
-                                        <SelectItem value="draft">{t('invoices.status_draft')}</SelectItem>
-                                        <SelectItem value="sent">{t('invoices.status_sent')}</SelectItem>
                                         <SelectItem value="paid">{t('invoices.status_paid')}</SelectItem>
                                         <SelectItem value="cancelled">{t('invoices.status_cancelled')}</SelectItem>
                                     </SelectContent>
@@ -448,29 +389,23 @@ export default function InvoicesPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge className={`${getStatusColor(invoice.status)} flex items-center gap-1.5 w-fit`}>
-                                                            {invoice.status === 'paid' && (
-                                                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            )}
-                                                            {invoice.status === 'sent' && (
-                                                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                                                </svg>
-                                                            )}
-                                                            {invoice.status === 'draft' && (
-                                                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                            )}
-                                                            {invoice.status === 'cancelled' && (
-                                                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                                </svg>
-                                                            )}
-                                                            {t(`invoices.status_${invoice.status}`)}
-                                                        </Badge>
+                                                        {invoice.status === 'paid' || invoice.status === 'cancelled' ? (
+                                                            <Badge className={`${getStatusColor(invoice.status)} flex items-center gap-1.5 w-fit`}>
+                                                                {invoice.status === 'paid' && (
+                                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    </svg>
+                                                                )}
+                                                                {invoice.status === 'cancelled' && (
+                                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                )}
+                                                                {t(`invoices.status_${invoice.status}`)}
+                                                            </Badge>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-xs italic">Pending</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center justify-center">
@@ -538,24 +473,23 @@ export default function InvoicesPage() {
                                                         <p className="text-sm text-gray-600 truncate">{invoice.customerName}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <Badge className={`text-[10px] px-2 py-1 ${getStatusColor(invoice.status)} flex items-center gap-1`}>
-                                                            {invoice.status === 'paid' && (
-                                                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            )}
-                                                            {invoice.status === 'sent' && (
-                                                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                                                </svg>
-                                                            )}
-                                                            {invoice.status === 'draft' && (
-                                                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                            )}
-                                                            <span>{t(`invoices.status_${invoice.status}`)}</span>
-                                                        </Badge>
+                                                        {invoice.status === 'paid' || invoice.status === 'cancelled' ? (
+                                                            <Badge className={`text-[10px] px-2 py-1 ${getStatusColor(invoice.status)} flex items-center gap-1`}>
+                                                                {invoice.status === 'paid' && (
+                                                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    </svg>
+                                                                )}
+                                                                {invoice.status === 'cancelled' && (
+                                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                )}
+                                                                <span>{t(`invoices.status_${invoice.status}`)}</span>
+                                                            </Badge>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-[10px] italic">Pending</span>
+                                                        )}
                                                         <div onClick={(e) => e.stopPropagation()}>
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
