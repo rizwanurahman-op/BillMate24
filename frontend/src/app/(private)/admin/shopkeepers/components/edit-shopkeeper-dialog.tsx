@@ -33,6 +33,7 @@ export function EditShopkeeperDialog({ shopkeeper, open, onOpenChange }: EditSho
         normalCustomers: false,
         billing: false,
         reports: false,
+        invoices: false,
     });
 
     useEffect(() => {

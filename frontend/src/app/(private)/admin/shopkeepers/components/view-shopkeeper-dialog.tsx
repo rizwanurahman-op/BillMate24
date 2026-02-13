@@ -59,6 +59,36 @@ export function ViewShopkeeperDialog({ shopkeeper, open, onOpenChange }: ViewSho
             border: 'border-green-100',
             text: 'text-green-700',
         },
+        {
+            icon: FileText,
+            label: 'Invoices',
+            value: storageStats.invoices.total.toString(),
+            description: `${storageStats.invoices.paid} paid • ${storageStats.invoices.draft} draft`,
+            color: 'bg-gradient-to-br from-rose-500 to-red-500',
+            bg: 'bg-rose-50',
+            border: 'border-rose-100',
+            text: 'text-rose-700',
+        },
+        {
+            icon: TrendingUp,
+            label: 'Transactions',
+            value: storageStats.transactions.total.toString(),
+            description: `${storageStats.transactions.income} income • ${storageStats.transactions.expense} expense`,
+            color: 'bg-gradient-to-br from-indigo-500 to-purple-500',
+            bg: 'bg-indigo-50',
+            border: 'border-indigo-100',
+            text: 'text-indigo-700',
+        },
+        {
+            icon: Database,
+            label: 'Payments',
+            value: storageStats.payments.total.toString(),
+            description: `${storageStats.payments.toCustomers} cust • ${storageStats.payments.toWholesalers} whol`,
+            color: 'bg-gradient-to-br from-cyan-500 to-blue-500',
+            bg: 'bg-cyan-50',
+            border: 'border-cyan-100',
+            text: 'text-cyan-700',
+        },
     ];
 
     const getInitials = (name: string) => {

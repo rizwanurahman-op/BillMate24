@@ -102,7 +102,7 @@ export function TopCustomers({ customers, isLoading }: TopCustomersProps) {
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors text-base">
-                                                        {customer.name}
+                                                        {customer.name === 'Walk-in Customer' ? t('common.walk_in_customer') : customer.name}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-0.5">
                                                         <span className="text-sm text-gray-500">
@@ -112,7 +112,7 @@ export function TopCustomers({ customers, isLoading }: TopCustomersProps) {
                                                             ? 'border-orange-200 text-orange-600 bg-orange-50'
                                                             : 'border-blue-200 text-blue-600 bg-blue-50'
                                                             }`}>
-                                                            {customer.customerType === 'due' ? t('billing.status_due') : t('dashboard.all')}
+                                                            {customer.customerType === 'due' ? t('billing.status_due') : t('common.normal')}
                                                         </Badge>
                                                     </div>
                                                 </div>
@@ -156,13 +156,13 @@ export function TopCustomers({ customers, isLoading }: TopCustomersProps) {
                                                     <RankIcon className="h-4 w-4" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-gray-900 text-sm truncate">{customer.name}</p>
+                                                    <p className="font-semibold text-gray-900 text-sm truncate">{customer.name === 'Walk-in Customer' ? t('common.walk_in_customer') : customer.name}</p>
                                                 </div>
                                                 <Badge variant="outline" className={`text-[10px] px-1.5 flex-shrink-0 ${customer.customerType === 'due'
                                                     ? 'border-orange-200 text-orange-600 bg-orange-50'
                                                     : 'border-blue-200 text-blue-600 bg-blue-50'
                                                     }`}>
-                                                    {customer.customerType === 'due' ? t('billing.status_due') : t('dashboard.all')}
+                                                    {customer.customerType === 'due' ? t('billing.status_due') : t('common.normal')}
                                                 </Badge>
                                             </div>
 

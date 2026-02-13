@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Users, Store, TrendingUp, UserCheck } from 'lucide-react';
+import { Users, Store, TrendingUp, UserCheck, Database } from 'lucide-react';
 import { Header } from '@/components/app/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import api from '@/config/axios';
@@ -45,13 +45,23 @@ function StatsCard({
 }
 
 export default function AdminDashboard() {
-    const { data: stats, isLoading } = useQuery<ShopkeeperStats>({
+    const { data: stats, isLoading: statsLoading } = useQuery<ShopkeeperStats>({
         queryKey: ['shopkeeper-stats'],
         queryFn: async () => {
             const response = await api.get('/users/stats');
             return response.data.data;
         },
     });
+
+    const { data: storageStats, isLoading: storageLoading } = useQuery({
+        queryKey: ['total-storage'],
+        queryFn: async () => {
+            const response = await api.get('/users/storage/total');
+            return response.data.data;
+        },
+    });
+
+    const isLoading = statsLoading || storageLoading;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -93,11 +103,11 @@ export default function AdminDashboard() {
                             description="Deactivated accounts"
                         />
                         <StatsCard
-                            title="Growth Rate"
-                            value="+12%"
-                            icon={TrendingUp}
-                            gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
-                            description="This month"
+                            title="System Storage"
+                            value={storageStats?.storage?.formatted || '0 Bytes'}
+                            icon={Database}
+                            gradient="bg-gradient-to-br from-indigo-500 to-purple-500"
+                            description={`${storageStats?.aggregates?.bills || 0} bills • ${storageStats?.aggregates?.invoices || 0} invoices`}
                         />
                     </div>
                 )}
@@ -123,16 +133,16 @@ export default function AdminDashboard() {
                                 </div>
                             </a>
                             <a
-                                href="/admin/subscriptions"
+                                href="/admin/storage"
                                 className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-green-100">
-                                        <TrendingUp className="h-5 w-5 text-green-600" />
+                                    <div className="p-2 rounded-lg bg-blue-100">
+                                        <Database className="h-5 w-5 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-900">Subscriptions</p>
-                                        <p className="text-sm text-gray-500">Manage subscription plans</p>
+                                        <p className="font-medium text-gray-900">Storage Analytics</p>
+                                        <p className="text-sm text-gray-500">System-wide storage breakdown</p>
                                     </div>
                                 </div>
                             </a>

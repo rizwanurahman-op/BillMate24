@@ -15,6 +15,7 @@ router.post('/logout', authenticate, authController.logout.bind(authController))
 router.post('/change-password', authenticate, authController.changePassword.bind(authController));
 router.get('/profile', authenticate, authController.getProfile.bind(authController));
 router.patch('/profile', authenticate, authController.updateProfile.bind(authController));
+router.patch('/features', authenticate, authController.updateOwnFeatures.bind(authController));
 
 // Invoice preferences routes (Protected)
 router.get('/invoice-preferences', authenticate, userController.getInvoicePreferences.bind(userController));

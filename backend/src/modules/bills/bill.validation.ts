@@ -10,7 +10,7 @@ const billItemSchema = z.object({
 export const createBillSchema = z.object({
     billType: z.enum(['purchase', 'sale']),
     entityType: z.enum(['wholesaler', 'due_customer', 'normal_customer']),
-    entityId: z.string().optional(),
+    entityId: z.string().optional().transform(v => v === '' ? undefined : v),
     entityName: z.string().min(1, 'Entity name is required'),
     totalAmount: z.number().min(0.01, 'Total amount must be greater than 0'),
     paidAmount: z.number().min(0, 'Paid amount must be positive').default(0),
@@ -45,7 +45,7 @@ export const updateBillSchema = z.object({
 export const billFilterSchema = z.object({
     billType: z.enum(['purchase', 'sale']).optional(),
     entityType: z.enum(['wholesaler', 'due_customer', 'normal_customer']).optional(),
-    entityId: z.string().optional(),
+    entityId: z.string().optional().transform(v => v === '' ? undefined : v),
     paymentMethod: z.enum(['cash', 'card', 'online']).optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),

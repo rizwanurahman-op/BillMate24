@@ -8,6 +8,7 @@ export interface Features {
     normalCustomers: boolean;
     billing: boolean;
     reports: boolean;
+    invoices: boolean;
 }
 
 // Invoice Preferences

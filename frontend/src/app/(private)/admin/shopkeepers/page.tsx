@@ -205,8 +205,23 @@ export default function ShopkeepersPage() {
                                                         {user.storageStats.storage.formatted}
                                                     </span>
                                                 </div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    {user.storageStats.bills.total} bills • {user.storageStats.customers.total} customers
+                                                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1.5 min-w-[140px]">
+                                                    <div className="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                                                        <span className="w-1 h-1 rounded-full bg-blue-400" />
+                                                        {user.storageStats.bills.total} bills
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                                                        <span className="w-1 h-1 rounded-full bg-green-400" />
+                                                        {user.storageStats.customers.total} cust.
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                                                        <span className="w-1 h-1 rounded-full bg-rose-400" />
+                                                        {user.storageStats.invoices.total} invoices
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                                                        <span className="w-1 h-1 rounded-full bg-amber-400" />
+                                                        {user.storageStats.payments.total} pay.
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>

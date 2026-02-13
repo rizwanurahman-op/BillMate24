@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Users, CreditCard, LayoutDashboard, Loader2, Activity } from 'lucide-react';
 import api from '@/config/axios';
 import { format } from 'date-fns';
+import { ml } from '@/lib/date-fns-ml';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import {
@@ -78,7 +79,7 @@ interface CustomerDashboardContainerProps {
 }
 
 export default function CustomerDashboardContainer({ initialData }: CustomerDashboardContainerProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('today');
     const [dateRange, setDateRange] = useState<DateRange>(getDateRange('today'));
 
@@ -307,7 +308,7 @@ export default function CustomerDashboardContainer({ initialData }: CustomerDash
                     <div className="flex items-center justify-between mt-0.5 md:mt-1">
                         <p className="text-gray-600 text-xs md:text-base flex items-center gap-1.5 md:gap-2">
                             <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-                            {format(new Date(), 'EEE, MMM d, yyyy')}
+                            {format(new Date(), 'EEE, MMM d, yyyy', { locale: i18n.language === 'ml' ? ml : undefined })}
                         </p>
                         <div className="md:hidden min-w-[140px] max-w-[50%] flex justify-end">
                             <TimeFilter value={timeFilter} onChange={handleTimeFilterChange} className="w-full" />

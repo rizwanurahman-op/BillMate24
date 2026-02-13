@@ -36,7 +36,8 @@
             "loading": "Removing...",
             "safe_action": "Safe Action • Restore Anytime",
             "remove_prefix": "You are about to remove"
-        }
+        },
+        "normal": "Normal"
     },
     "sidebar": {
         "dashboard": "Dashboard",
@@ -117,7 +118,8 @@
         "no_bills_yet": "No bills yet",
         "total_revenue": "Total Revenue",
         "todays_revenue": "Today's Money In",
-        "todays_sales": "Today's Total Sales"
+        "todays_sales": "Today's Total Sales",
+        "all": "Normal"
     },
     "reports": {
         "revenue": "Revenue",
@@ -873,7 +875,16 @@
         "confirm_password_required": "Confirm password is required",
         "name_min": "Name must be at least 2 characters",
         "place": "Place / City",
-        "place_placeholder": "City or Town"
+        "place_placeholder": "City or Town",
+        "features": "Features",
+        "features_title": "Feature Settings",
+        "features_desc": "Control which features are active for your shop. Changes take effect immediately.",
+        "due_customers": "Due Customers",
+        "due_customers_desc": "Track credit sales and manage customer payment balances. When disabled, all due customer related options will be hidden across the app.",
+        "feature_enabled": "Enabled",
+        "feature_disabled": "Disabled",
+        "features_update_success": "Feature settings updated",
+        "features_update_failed": "Failed to update feature settings"
     },
     "invoices": {
         "title": "Invoice Management",

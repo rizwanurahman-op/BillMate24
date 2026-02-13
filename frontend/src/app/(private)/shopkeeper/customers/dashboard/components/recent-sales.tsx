@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Receipt, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
+import { ml } from '@/lib/date-fns-ml';
 import Link from 'next/link';
 
 interface Sale {
@@ -36,7 +37,8 @@ function formatCurrency(amount: number): string {
 import { useTranslation } from 'react-i18next';
 
 export function RecentSales({ sales, isLoading }: RecentSalesProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const dateLocale = i18n.language === 'ml' ? ml : undefined;
     if (isLoading) {
         return (
             <Card className="border-0 shadow-lg md:shadow-xl rounded-xl md:rounded-2xl">
@@ -95,7 +97,9 @@ export function RecentSales({ sales, isLoading }: RecentSalesProps) {
                                     >
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <p className="font-semibold text-gray-900 text-base">{sale.entityName}</p>
+                                                <p className="font-semibold text-gray-900 text-base">
+                                                    {sale.entityName === 'Walk-in Customer' ? t('common.walk_in_customer') : sale.entityName}
+                                                </p>
                                                 <Badge variant="outline" className={`text-xs px-2 ${sale.entityType === 'due_customer'
                                                     ? 'border-orange-200 text-orange-600 bg-orange-50'
                                                     : 'border-blue-200 text-blue-600 bg-blue-50'
@@ -108,7 +112,7 @@ export function RecentSales({ sales, isLoading }: RecentSalesProps) {
                                                     {sale.billNumber}
                                                 </span>
                                                 <span>•</span>
-                                                <span>{format(new Date(sale.createdAt), 'dd MMM yyyy, hh:mm a')}</span>
+                                                <span>{format(new Date(sale.createdAt), 'dd MMM yyyy, hh:mm a', { locale: dateLocale })}</span>
                                             </div>
                                         </div>
                                         <div className="text-right ml-4">
@@ -141,7 +145,9 @@ export function RecentSales({ sales, isLoading }: RecentSalesProps) {
                                         {/* Header Row - Name, Badge, Bill Number */}
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                <p className="font-semibold text-gray-900 text-sm truncate">{sale.entityName}</p>
+                                                <p className="font-semibold text-gray-900 text-sm truncate">
+                                                    {sale.entityName === 'Walk-in Customer' ? t('common.walk_in_customer') : sale.entityName}
+                                                </p>
                                                 <Badge variant="outline" className={`text-[10px] px-1.5 flex-shrink-0 ${sale.entityType === 'due_customer'
                                                     ? 'border-orange-200 text-orange-600 bg-orange-50'
                                                     : 'border-blue-200 text-blue-600 bg-blue-50'
@@ -183,7 +189,7 @@ export function RecentSales({ sales, isLoading }: RecentSalesProps) {
 
                                         {/* Footer - Date */}
                                         <p className="text-[10px] text-gray-400 text-center">
-                                            {format(new Date(sale.createdAt), 'dd MMM yyyy, hh:mm a')}
+                                            {format(new Date(sale.createdAt), 'dd MMM yyyy, hh:mm a', { locale: dateLocale })}
                                         </p>
                                     </div>
                                 );

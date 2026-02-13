@@ -8,6 +8,7 @@ export interface Features {
     normalCustomers: boolean;
     billing: boolean;
     reports: boolean;
+    invoices: boolean;
 }
 
 // User interface
@@ -45,6 +46,22 @@ export interface StorageStats {
         total: number;
         purchase: number;
         sale: number;
+    };
+    payments: {
+        total: number;
+        toCustomers: number;
+        toWholesalers: number;
+    };
+    transactions: {
+        total: number;
+        income: number;
+        expense: number;
+    };
+    invoices: {
+        total: number;
+        draft: number;
+        sent: number;
+        paid: number;
     };
     revenue: {
         total: number;

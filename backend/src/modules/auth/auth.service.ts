@@ -172,6 +172,27 @@ export class AuthService {
         return userResponse as Omit<IUser, 'password' | 'refreshToken'>;
     }
 
+    async updateOwnFeatures(userId: string, features: Partial<{ dueCustomers: boolean }>): Promise<Omit<IUser, 'password' | 'refreshToken'>> {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Only allow toggling specific self-service features
+        if (features.hasOwnProperty('dueCustomers')) {
+            user.features.dueCustomers = features.dueCustomers!;
+        }
+
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete (userResponse as any).password;
+        delete (userResponse as any).refreshToken;
+
+        return userResponse as Omit<IUser, 'password' | 'refreshToken'>;
+    }
+
     async forgotPassword(email: string): Promise<void> {
         const user = await User.findOne({ email: email.toLowerCase() });
 

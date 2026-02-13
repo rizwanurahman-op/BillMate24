@@ -8,6 +8,7 @@ const featuresSchema = new Schema<Features>(
         normalCustomers: { type: Boolean, default: true },
         billing: { type: Boolean, default: true },
         reports: { type: Boolean, default: true },
+        invoices: { type: Boolean, default: true },
     },
     { _id: false }
 );

@@ -7,6 +7,7 @@ import { Customer } from '../customers/customer.model';
 import { Wholesaler } from '../wholesalers/wholesaler.model';
 import { Payment } from '../payments/payment.model';
 import { Transaction } from '../dashboard/transaction.model';
+import { Invoice } from '../invoices/invoice.model';
 import mongoose from 'mongoose';
 
 export class UserService {
@@ -171,107 +172,191 @@ export class UserService {
         const shopkeeperObjectId = new mongoose.Types.ObjectId(shopkeeperId);
 
         const [
-            totalCustomers,
-            dueCustomers,
-            normalCustomers,
-            totalWholesalers,
-            totalBills,
-            purchaseBills,
-            saleBills,
-            totalPayments,
-            customerPayments,
-            wholesalerPayments,
-            totalTransactions,
-            incomeTransactions,
-            expenseTransactions,
-            totalRevenue,
-            totalExpenses,
+            customerStats,
+            wholesalerStats,
+            billStats,
+            paymentStats,
+            transactionStats,
+            invoiceStats,
+            userStats,
+            revenueStats,
+            invoiceRevenueStats
         ] = await Promise.all([
-            Customer.countDocuments({ shopkeeperId: shopkeeperObjectId }),
-            Customer.countDocuments({ shopkeeperId: shopkeeperObjectId, type: 'due' }),
-            Customer.countDocuments({ shopkeeperId: shopkeeperObjectId, type: 'normal' }),
-            Wholesaler.countDocuments({ shopkeeperId: shopkeeperObjectId, isDeleted: false }),
-            Bill.countDocuments({ shopkeeperId: shopkeeperObjectId }),
-            Bill.countDocuments({ shopkeeperId: shopkeeperObjectId, billType: 'purchase' }),
-            Bill.countDocuments({ shopkeeperId: shopkeeperObjectId, billType: 'sale' }),
-            Payment.countDocuments({ shopkeeperId: shopkeeperObjectId }),
-            Payment.countDocuments({ shopkeeperId: shopkeeperObjectId, entityType: 'customer' }),
-            Payment.countDocuments({ shopkeeperId: shopkeeperObjectId, entityType: 'wholesaler' }),
-            Transaction.countDocuments({ shopkeeperId: shopkeeperObjectId }),
-            Transaction.countDocuments({ shopkeeperId: shopkeeperObjectId, type: 'income' }),
-            Transaction.countDocuments({ shopkeeperId: shopkeeperObjectId, type: 'expense' }),
-            Bill.aggregate([
-                { $match: { shopkeeperId: shopkeeperObjectId, billType: 'sale' } },
-                { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            // Customers
+            Customer.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        due: { $sum: { $cond: [{ $eq: ['$type', 'due'] }, 1, 0] } },
+                        normal: { $sum: { $cond: [{ $eq: ['$type', 'normal'] }, 1, 0] } },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
             ]),
-            Bill.aggregate([
-                { $match: { shopkeeperId: shopkeeperObjectId, billType: 'purchase' } },
-                { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            // Wholesalers
+            Wholesaler.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId, isDeleted: false } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
             ]),
+            // Bills
+            Bill.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        purchase: { $sum: { $cond: [{ $eq: ['$billType', 'purchase'] }, 1, 0] } },
+                        sale: { $sum: { $cond: [{ $eq: ['$billType', 'sale'] }, 1, 0] } },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
+            ]),
+            // Payments
+            Payment.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        toCustomers: { $sum: { $cond: [{ $eq: ['$entityType', 'customer'] }, 1, 0] } },
+                        toWholesalers: { $sum: { $cond: [{ $eq: ['$entityType', 'wholesaler'] }, 1, 0] } },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
+            ]),
+            // Transactions
+            Transaction.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        income: { $sum: { $cond: [{ $eq: ['$type', 'income'] }, 1, 0] } },
+                        expense: { $sum: { $cond: [{ $eq: ['$type', 'expense'] }, 1, 0] } },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
+            ]),
+            // Invoices
+            Invoice.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId, isDeleted: false } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        draft: { $sum: { $cond: [{ $eq: ['$status', 'draft'] }, 1, 0] } },
+                        sent: { $sum: { $cond: [{ $eq: ['$status', 'sent'] }, 1, 0] } },
+                        paid: { $sum: { $cond: [{ $eq: ['$status', 'paid'] }, 1, 0] } },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
+            ]),
+            // User (Shopkeeper account)
+            User.aggregate([
+                { $match: { _id: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        count: { $sum: 1 },
+                        size: { $sum: { $bsonSize: '$$ROOT' } }
+                    }
+                }
+            ]),
+            // Revenue Stats
+            Bill.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId } },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: { $cond: [{ $eq: ['$billType', 'sale'] }, '$totalAmount', 0] } },
+                        totalExpenses: { $sum: { $cond: [{ $eq: ['$billType', 'purchase'] }, '$totalAmount', 0] } }
+                    }
+                }
+            ]),
+            // Invoice Revenue
+            Invoice.aggregate([
+                { $match: { shopkeeperId: shopkeeperObjectId, status: { $ne: 'cancelled' } } },
+                { $group: { _id: null, total: { $sum: '$total' } } }
+            ])
         ]);
 
-        // Estimate storage size (approximate calculation)
-        // Average document sizes in MongoDB:
-        // - User/Shopkeeper: ~300 bytes (basic profile data)
-        // - Customer: ~500 bytes
-        // - Wholesaler: ~500 bytes
-        // - Bill: ~1KB (1024 bytes) due to items array
-        // - Payment: ~400 bytes
-        // - Transaction: ~350 bytes
-        const estimatedStorageBytes =
-            300 + // Shopkeeper account itself
-            (totalCustomers * 500) +
-            (totalWholesalers * 500) +
-            (totalBills * 1024) +
-            (totalPayments * 400) +
-            (totalTransactions * 350);
+        const c = customerStats[0] || { total: 0, due: 0, normal: 0, size: 0 };
+        const w = wholesalerStats[0] || { total: 0, size: 0 };
+        const b = billStats[0] || { total: 0, purchase: 0, sale: 0, size: 0 };
+        const p = paymentStats[0] || { total: 0, toCustomers: 0, toWholesalers: 0, size: 0 };
+        const t = transactionStats[0] || { total: 0, income: 0, expense: 0, size: 0 };
+        const i = invoiceStats[0] || { total: 0, draft: 0, sent: 0, paid: 0, size: 0 };
+        const u = userStats[0] || { count: 0, size: 0 };
+        const r = revenueStats[0] || { totalRevenue: 0, totalExpenses: 0 };
+        const ir = invoiceRevenueStats[0]?.total || 0;
+        const totalBytes = c.size + w.size + b.size + p.size + t.size + i.size + u.size;
 
         // Convert to human-readable format
         const formatBytes = (bytes: number): string => {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            const idx = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, idx)).toFixed(2)) + ' ' + sizes[idx];
         };
 
         return {
             shopkeeperId,
             storage: {
-                totalBytes: estimatedStorageBytes,
-                formatted: formatBytes(estimatedStorageBytes),
+                totalBytes,
+                formatted: formatBytes(totalBytes),
             },
             users: {
-                shopkeeperAccount: 1,
-                estimatedBytes: 300,
+                shopkeeperAccount: u.count,
+                estimatedBytes: u.size,
             },
             customers: {
-                total: totalCustomers,
-                due: dueCustomers,
-                normal: normalCustomers,
+                total: c.total,
+                due: c.due,
+                normal: c.normal,
+                size: c.size
             },
             wholesalers: {
-                total: totalWholesalers,
+                total: w.total,
+                size: w.size
             },
             bills: {
-                total: totalBills,
-                purchase: purchaseBills,
-                sale: saleBills,
+                total: b.total,
+                purchase: b.purchase,
+                sale: b.sale,
+                size: b.size
             },
             payments: {
-                total: totalPayments,
-                toCustomers: customerPayments,
-                toWholesalers: wholesalerPayments,
+                total: p.total,
+                toCustomers: p.toCustomers,
+                toWholesalers: p.toWholesalers,
+                size: p.size
             },
             transactions: {
-                total: totalTransactions,
-                income: incomeTransactions,
-                expense: expenseTransactions,
+                total: t.total,
+                income: t.income,
+                expense: t.expense,
+                size: t.size
+            },
+            invoices: {
+                total: i.total,
+                draft: i.draft,
+                sent: i.sent,
+                paid: i.paid,
+                size: i.size
             },
             revenue: {
-                total: totalRevenue[0]?.total || 0,
-                expenses: totalExpenses[0]?.total || 0,
-                profit: (totalRevenue[0]?.total || 0) - (totalExpenses[0]?.total || 0),
+                total: r.totalRevenue + ir,
+                expenses: r.totalExpenses,
+                profit: (r.totalRevenue + ir) - r.totalExpenses,
             },
         };
     }
@@ -314,11 +399,19 @@ export class UserService {
 
         let totalStorage = 0;
         let totalUsers = shopkeepers.length;
+        let totalUsersSize = 0;
         let totalCustomers = 0;
+        let totalCustomersSize = 0;
         let totalWholesalers = 0;
+        let totalWholesalersSize = 0;
         let totalBills = 0;
+        let totalBillsSize = 0;
         let totalPayments = 0;
+        let totalPaymentsSize = 0;
         let totalTransactions = 0;
+        let totalTransactionsSize = 0;
+        let totalInvoices = 0;
+        let totalInvoicesSize = 0;
         let totalRevenue = 0;
         let totalExpenses = 0;
 
@@ -326,11 +419,19 @@ export class UserService {
         for (const shopkeeper of shopkeepers) {
             const stats = await this.getShopkeeperStorageStats(shopkeeper._id.toString());
             totalStorage += stats.storage.totalBytes;
+            totalUsersSize += stats.users.estimatedBytes;
             totalCustomers += stats.customers.total;
+            totalCustomersSize += stats.customers.size;
             totalWholesalers += stats.wholesalers.total;
+            totalWholesalersSize += stats.wholesalers.size;
             totalBills += stats.bills.total;
+            totalBillsSize += stats.bills.size;
             totalPayments += stats.payments.total;
+            totalPaymentsSize += stats.payments.size;
             totalTransactions += stats.transactions.total;
+            totalTransactionsSize += stats.transactions.size;
+            totalInvoices += stats.invoices.total;
+            totalInvoicesSize += stats.invoices.size;
             totalRevenue += stats.revenue.total;
             totalExpenses += stats.revenue.expenses;
         }
@@ -351,39 +452,45 @@ export class UserService {
                 breakdown: {
                     users: {
                         count: totalUsers,
-                        bytes: totalUsers * 300,
-                        formatted: formatBytes(totalUsers * 300),
-                        percentage: totalStorage > 0 ? ((totalUsers * 300) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalUsersSize,
+                        formatted: formatBytes(totalUsersSize),
+                        percentage: totalStorage > 0 ? (totalUsersSize / totalStorage * 100).toFixed(2) : '0'
                     },
                     customers: {
                         count: totalCustomers,
-                        bytes: totalCustomers * 500,
-                        formatted: formatBytes(totalCustomers * 500),
-                        percentage: totalStorage > 0 ? ((totalCustomers * 500) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalCustomersSize,
+                        formatted: formatBytes(totalCustomersSize),
+                        percentage: totalStorage > 0 ? (totalCustomersSize / totalStorage * 100).toFixed(2) : '0'
                     },
                     wholesalers: {
                         count: totalWholesalers,
-                        bytes: totalWholesalers * 500,
-                        formatted: formatBytes(totalWholesalers * 500),
-                        percentage: totalStorage > 0 ? ((totalWholesalers * 500) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalWholesalersSize,
+                        formatted: formatBytes(totalWholesalersSize),
+                        percentage: totalStorage > 0 ? (totalWholesalersSize / totalStorage * 100).toFixed(2) : '0'
                     },
                     bills: {
                         count: totalBills,
-                        bytes: totalBills * 1024,
-                        formatted: formatBytes(totalBills * 1024),
-                        percentage: totalStorage > 0 ? ((totalBills * 1024) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalBillsSize,
+                        formatted: formatBytes(totalBillsSize),
+                        percentage: totalStorage > 0 ? (totalBillsSize / totalStorage * 100).toFixed(2) : '0'
                     },
                     payments: {
                         count: totalPayments,
-                        bytes: totalPayments * 400,
-                        formatted: formatBytes(totalPayments * 400),
-                        percentage: totalStorage > 0 ? ((totalPayments * 400) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalPaymentsSize,
+                        formatted: formatBytes(totalPaymentsSize),
+                        percentage: totalStorage > 0 ? (totalPaymentsSize / totalStorage * 100).toFixed(2) : '0'
                     },
                     transactions: {
                         count: totalTransactions,
-                        bytes: totalTransactions * 350,
-                        formatted: formatBytes(totalTransactions * 350),
-                        percentage: totalStorage > 0 ? ((totalTransactions * 350) / totalStorage * 100).toFixed(2) : '0'
+                        bytes: totalTransactionsSize,
+                        formatted: formatBytes(totalTransactionsSize),
+                        percentage: totalStorage > 0 ? (totalTransactionsSize / totalStorage * 100).toFixed(2) : '0'
+                    },
+                    invoices: {
+                        count: totalInvoices,
+                        bytes: totalInvoicesSize,
+                        formatted: formatBytes(totalInvoicesSize),
+                        percentage: totalStorage > 0 ? (totalInvoicesSize / totalStorage * 100).toFixed(2) : '0'
                     }
                 }
             },
@@ -394,6 +501,7 @@ export class UserService {
                 bills: totalBills,
                 payments: totalPayments,
                 transactions: totalTransactions,
+                invoices: totalInvoices,
                 revenue: totalRevenue,
                 expenses: totalExpenses,
                 profit: totalRevenue - totalExpenses
@@ -425,56 +533,65 @@ export class UserService {
                     estimatedBytes: stats.users.estimatedBytes,
                     formatted: formatBytes(stats.users.estimatedBytes),
                     percentage: totalBytes > 0 ? ((stats.users.estimatedBytes) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 300
+                    avgSizePerItem: stats.users.estimatedBytes / (stats.users.shopkeeperAccount || 1)
                 },
                 customers: {
                     total: stats.customers.total,
                     due: stats.customers.due,
                     normal: stats.customers.normal,
-                    estimatedBytes: stats.customers.total * 500,
-                    formatted: formatBytes(stats.customers.total * 500),
-                    percentage: totalBytes > 0 ? ((stats.customers.total * 500) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 500
+                    estimatedBytes: stats.customers.size,
+                    formatted: formatBytes(stats.customers.size),
+                    percentage: totalBytes > 0 ? ((stats.customers.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.customers.size / (stats.customers.total || 1)
                 },
                 wholesalers: {
                     total: stats.wholesalers.total,
-                    estimatedBytes: stats.wholesalers.total * 500,
-                    formatted: formatBytes(stats.wholesalers.total * 500),
-                    percentage: totalBytes > 0 ? ((stats.wholesalers.total * 500) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 500
+                    estimatedBytes: stats.wholesalers.size,
+                    formatted: formatBytes(stats.wholesalers.size),
+                    percentage: totalBytes > 0 ? ((stats.wholesalers.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.wholesalers.size / (stats.wholesalers.total || 1)
                 },
                 bills: {
                     total: stats.bills.total,
                     purchase: stats.bills.purchase,
                     sale: stats.bills.sale,
-                    estimatedBytes: stats.bills.total * 1024,
-                    formatted: formatBytes(stats.bills.total * 1024),
-                    percentage: totalBytes > 0 ? ((stats.bills.total * 1024) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 1024
+                    estimatedBytes: stats.bills.size,
+                    formatted: formatBytes(stats.bills.size),
+                    percentage: totalBytes > 0 ? ((stats.bills.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.bills.size / (stats.bills.total || 1)
                 },
                 payments: {
                     total: stats.payments.total,
                     toCustomers: stats.payments.toCustomers,
                     toWholesalers: stats.payments.toWholesalers,
-                    estimatedBytes: stats.payments.total * 400,
-                    formatted: formatBytes(stats.payments.total * 400),
-                    percentage: totalBytes > 0 ? ((stats.payments.total * 400) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 400
+                    estimatedBytes: stats.payments.size,
+                    formatted: formatBytes(stats.payments.size),
+                    percentage: totalBytes > 0 ? ((stats.payments.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.payments.size / (stats.payments.total || 1)
                 },
                 transactions: {
                     total: stats.transactions.total,
                     income: stats.transactions.income,
                     expense: stats.transactions.expense,
-                    estimatedBytes: stats.transactions.total * 350,
-                    formatted: formatBytes(stats.transactions.total * 350),
-                    percentage: totalBytes > 0 ? ((stats.transactions.total * 350) / totalBytes * 100).toFixed(2) : '0',
-                    avgSizePerItem: 350
+                    estimatedBytes: stats.transactions.size,
+                    formatted: formatBytes(stats.transactions.size),
+                    percentage: totalBytes > 0 ? ((stats.transactions.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.transactions.size / (stats.transactions.total || 1)
+                },
+                invoices: {
+                    total: stats.invoices.total,
+                    draft: stats.invoices.draft,
+                    sent: stats.invoices.sent,
+                    paid: stats.invoices.paid,
+                    estimatedBytes: stats.invoices.size,
+                    formatted: formatBytes(stats.invoices.size),
+                    percentage: totalBytes > 0 ? ((stats.invoices.size) / totalBytes * 100).toFixed(2) : '0',
+                    avgSizePerItem: stats.invoices.size / (stats.invoices.total || 1)
                 }
             },
             limits: {
                 used: totalBytes,
                 usedFormatted: stats.storage.formatted,
-                // You can set limits per shopkeeper here if needed
                 limit: 100 * 1024 * 1024, // 100 MB default limit
                 limitFormatted: '100 MB',
                 percentage: ((totalBytes / (100 * 1024 * 1024)) * 100).toFixed(2),
@@ -506,7 +623,8 @@ export class UserService {
                         wholesalers: stats.wholesalers.total,
                         bills: stats.bills.total,
                         payments: stats.payments.total,
-                        transactions: stats.transactions.total
+                        transactions: stats.transactions.total,
+                        invoices: stats.invoices.total
                     }
                 };
             })

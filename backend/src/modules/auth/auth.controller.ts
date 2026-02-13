@@ -106,6 +106,24 @@ export class AuthController {
         }
     }
 
+    async updateOwnFeatures(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.user) {
+                sendError(res, 'Authentication required', 401);
+                return;
+            }
+            const { features } = req.body;
+            if (!features || typeof features !== 'object') {
+                sendError(res, 'Invalid features data', 400);
+                return;
+            }
+            const updatedUser = await authService.updateOwnFeatures(req.user._id, features);
+            sendSuccess(res, updatedUser, 'Features updated successfully');
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { email } = forgotPasswordSchema.parse(req.body);

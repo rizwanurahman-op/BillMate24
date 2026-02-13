@@ -42,8 +42,10 @@ const billSchema = z.object({
     entityType: z.enum(['wholesaler', 'due_customer', 'normal_customer']),
     entityId: z.string().optional(),
     entityName: z.string().optional(),
-    totalAmount: z.number().min(0.01, 'Amount must be greater than 0'),
-    paidAmount: z.number().min(0, 'Paid amount must be positive'),
+    totalAmount: z.number({ message: 'Please enter a valid amount' })
+        .min(0.01, 'Amount must be greater than 0'),
+    paidAmount: z.number({ message: 'Please enter a valid amount' })
+        .min(0, 'Paid amount must be positive'),
     paymentMethod: z.enum(['cash', 'card', 'online']).optional(),
     notes: z.string().optional(),
 }).refine((data) => {
@@ -63,7 +65,11 @@ export default function BillingPage() {
     const queryClient = useQueryClient();
     const { hasFeature } = useAuth();
     const [billType, setBillType] = useState<'purchase' | 'sale'>('sale');
-    const [customerType, setCustomerType] = useState<'due_customer' | 'normal_customer'>('due_customer');
+    // Default to due_customer only if feature is enabled, otherwise normal_customer
+    const hasDueCustomers = hasFeature('dueCustomers');
+    const hasNormalCustomers = hasFeature('normalCustomers');
+    const defaultCustomerType = hasDueCustomers ? 'due_customer' : 'normal_customer';
+    const [customerType, setCustomerType] = useState<'due_customer' | 'normal_customer'>(defaultCustomerType);
     const [resetKey, setResetKey] = useState(0);
 
     const {
@@ -77,7 +83,7 @@ export default function BillingPage() {
         resolver: zodResolver(billSchema),
         defaultValues: {
             billType: 'sale',
-            entityType: 'due_customer',
+            entityType: defaultCustomerType,
             paidAmount: 0,
             paymentMethod: 'cash',
             totalAmount: 0,
@@ -192,14 +198,14 @@ export default function BillingPage() {
             // Increment reset key to force-refresh interactive components (clears search inputs)
             setResetKey(prev => prev + 1);
 
-            // Reset customer type to default (Due Customer)
-            setCustomerType('due_customer');
+            // Reset customer type to default
+            setCustomerType(defaultCustomerType);
 
             // Reset all form fields
             // billType is retained for bulk entry
             reset({
                 billType: billType,
-                entityType: billType === 'purchase' ? 'wholesaler' : 'due_customer',
+                entityType: billType === 'purchase' ? 'wholesaler' : defaultCustomerType,
                 paidAmount: 0,
                 paymentMethod: 'cash',
                 totalAmount: 0,
@@ -230,6 +236,11 @@ export default function BillingPage() {
             billType,
             entityType: billType === 'purchase' ? 'wholesaler' : customerType,
         };
+
+        // Remove empty entityId to avoid ObjectId cast error
+        if (!payload.entityId) {
+            delete payload.entityId;
+        }
 
         if (paidAmount === 0) {
             delete payload.paymentMethod;
@@ -303,8 +314,10 @@ export default function BillingPage() {
                                     <label className="text-xs md:text-sm font-bold text-slate-800 block uppercase tracking-wide">
                                         {t('billing.select_customer')}
                                     </label>
-                                    <div className="flex gap-2 md:gap-3">
-                                        {hasFeature('dueCustomers') && (
+
+                                    {/* Show customer type toggle only when both types are enabled */}
+                                    {hasDueCustomers && hasNormalCustomers && (
+                                        <div className="flex gap-2 md:gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => setCustomerType('due_customer')}
@@ -330,8 +343,6 @@ export default function BillingPage() {
                                                     </div>
                                                 </div>
                                             </button>
-                                        )}
-                                        {hasFeature('normalCustomers') && (
                                             <button
                                                 type="button"
                                                 onClick={() => setCustomerType('normal_customer')}
@@ -357,11 +368,40 @@ export default function BillingPage() {
                                                     </div>
                                                 </div>
                                             </button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
+
+                                    {/* Single type indicator when only one is enabled */}
+                                    {hasDueCustomers && !hasNormalCustomers && (
+                                        <div className="p-3 md:p-4 rounded-xl border-2 border-blue-200 bg-blue-50/50">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-blue-500 text-white flex items-center justify-center shadow-lg">
+                                                    <Users className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm md:text-base text-blue-700">{t('billing.due_customer')}</p>
+                                                    <p className="text-[10px] md:text-xs text-blue-600">{t('billing.credit_sale')}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!hasDueCustomers && hasNormalCustomers && (
+                                        <div className="p-3 md:p-4 rounded-xl border-2 border-green-200 bg-green-50/50">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-green-500 text-white flex items-center justify-center shadow-lg">
+                                                    <IndianRupee className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm md:text-base text-green-700">{t('billing.normal_customer')}</p>
+                                                    <p className="text-[10px] md:text-xs text-green-600">{t('billing.cash_sale')}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Customer Search - Enhanced visibility */}
-                                    {customerType === 'due_customer' && hasFeature('dueCustomers') && (
+                                    {customerType === 'due_customer' && hasDueCustomers && (
                                         <div className="pt-2">
                                             <label className="text-xs md:text-sm font-semibold text-slate-700 mb-2 block flex items-center gap-1.5">
                                                 <Search className="h-3.5 w-3.5 text-blue-500" />
@@ -442,12 +482,6 @@ export default function BillingPage() {
                                             {errors.totalAmount.message}
                                         </p>
                                     )}
-                                    <div className="mt-3 p-2 bg-green-100 rounded-lg">
-                                        <p className="text-xs md:text-sm text-green-700 font-medium flex items-center gap-2">
-                                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 text-white text-xs">✓</span>
-                                            {t('billing.fully_paid')} - {t('billing.no_dues')}
-                                        </p>
-                                    </div>
                                 </div>
                             ) : (
                                 /* For Due customers & Purchases - show both fields */
@@ -506,8 +540,8 @@ export default function BillingPage() {
                                         </div>
                                     )}
 
-                                    {/* Fully Paid indicator - no excess */}
-                                    {dueAmount <= 0 && excessPayment === 0 && totalAmount > 0 && (
+                                    {/* Fully Paid indicator - no excess - Hide for normal/walk-in customers */}
+                                    {dueAmount <= 0 && excessPayment === 0 && totalAmount > 0 && customerType !== 'normal_customer' && (
                                         <div className="mt-4 p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl shadow-lg">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">

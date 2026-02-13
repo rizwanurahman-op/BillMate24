@@ -81,6 +81,12 @@ interface TotalStorageStats {
                 formatted: string;
                 percentage: string;
             };
+            invoices: {
+                count: number;
+                bytes: number;
+                formatted: string;
+                percentage: string;
+            };
         };
     };
     aggregates: {
@@ -90,6 +96,7 @@ interface TotalStorageStats {
         bills: number;
         payments: number;
         transactions: number;
+        invoices: number;
         revenue: number;
         expenses: number;
         profit: number;
@@ -111,6 +118,7 @@ interface ShopkeeperComparison {
         bills: number;
         payments: number;
         transactions: number;
+        invoices: number;
     };
 }
 
@@ -165,6 +173,16 @@ interface DetailedStorageStats {
             total: number;
             income: number;
             expense: number;
+            estimatedBytes: number;
+            formatted: string;
+            percentage: string;
+            avgSizePerItem: number;
+        };
+        invoices: {
+            total: number;
+            draft: number;
+            sent: number;
+            paid: number;
             estimatedBytes: number;
             formatted: string;
             percentage: string;
@@ -276,6 +294,12 @@ export default function StoragePage() {
             icon: ArrowRightLeft,
             color: 'indigo',
             data: totalStats?.storage.breakdown.transactions
+        },
+        {
+            name: 'Invoices',
+            icon: FileText,
+            color: 'rose',
+            data: totalStats?.storage.breakdown.invoices
         }
     ];
 
@@ -365,7 +389,8 @@ export default function StoragePage() {
                                                 (totalStats?.aggregates.wholesalers || 0) +
                                                 (totalStats?.aggregates.bills || 0) +
                                                 (totalStats?.aggregates.payments || 0) +
-                                                (totalStats?.aggregates.transactions || 0)
+                                                (totalStats?.aggregates.transactions || 0) +
+                                                (totalStats?.aggregates.invoices || 0)
                                             ).toLocaleString()}
                                         </p>
                                         <p className="text-xs text-gray-600">
@@ -515,6 +540,7 @@ export default function StoragePage() {
                                                     <TableHead className="font-semibold hidden sm:table-cell">Bills</TableHead>
                                                     <TableHead className="font-semibold hidden xl:table-cell">Payments</TableHead>
                                                     <TableHead className="font-semibold hidden xl:table-cell">Transactions</TableHead>
+                                                    <TableHead className="font-semibold hidden xl:table-cell">Invoices</TableHead>
                                                     <TableHead className="font-semibold w-[80px]">Actions</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -564,6 +590,11 @@ export default function StoragePage() {
                                                         <TableCell className="hidden xl:table-cell">
                                                             <Badge variant="outline" className="font-medium">
                                                                 {shop.counts.transactions}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="hidden xl:table-cell">
+                                                            <Badge variant="outline" className="font-medium">
+                                                                {shop.counts.invoices}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
@@ -789,6 +820,37 @@ export default function StoragePage() {
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Income:</span>
                                                 <span className="font-semibold text-gray-900">{detailedStats.breakdown.transactions.income}</span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Invoices */}
+                                <Card className="border-0 shadow-md bg-rose-50">
+                                    <CardContent className="p-4">
+                                        <div className="flex items-start gap-3 mb-3">
+                                            <div className="p-2 bg-rose-600 rounded-lg">
+                                                <FileText className="h-5 w-5 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-semibold text-rose-900">Invoices</p>
+                                                <p className="text-2xl font-bold text-gray-900 mt-1">{detailedStats.breakdown.invoices.total}</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Storage:</span>
+                                                <span className="font-semibold text-gray-900">{detailedStats.breakdown.invoices.formatted}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Percentage:</span>
+                                                <span className="font-semibold text-purple-600">{detailedStats.breakdown.invoices.percentage}%</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Paid/Draft:</span>
+                                                <span className="font-semibold text-gray-900">
+                                                    {detailedStats.breakdown.invoices.paid}/{detailedStats.breakdown.invoices.draft}
+                                                </span>
                                             </div>
                                         </div>
                                     </CardContent>

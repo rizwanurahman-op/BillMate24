@@ -14,20 +14,22 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
+import { Features } from '@/types';
 
 interface NavItem {
     href: string;
     label: string;
     icon: any;
     activePrefix?: string;
+    feature?: keyof Features;
 }
 
 const shopkeeperItems: NavItem[] = [
     { href: '/shopkeeper/dashboard', label: 'bottom_nav.home', icon: LayoutDashboard },
     { href: '/shopkeeper/billing', label: 'bottom_nav.bill', icon: Receipt },
-    { href: '/shopkeeper/customers/due', label: 'bottom_nav.customers', icon: Users, activePrefix: '/shopkeeper/customers' },
-    { href: '/shopkeeper/wholesalers/payments', label: 'bottom_nav.wholesalers', icon: Package, activePrefix: '/shopkeeper/wholesalers' },
-    { href: '/shopkeeper/reports/daily', label: 'bottom_nav.reports', icon: BarChart3, activePrefix: '/shopkeeper/reports' },
+    { href: '/shopkeeper/customers/due', label: 'bottom_nav.customers', icon: Users, activePrefix: '/shopkeeper/customers', feature: 'dueCustomers' },
+    { href: '/shopkeeper/wholesalers/payments', label: 'bottom_nav.wholesalers', icon: Package, activePrefix: '/shopkeeper/wholesalers', feature: 'wholesalers' },
+    { href: '/shopkeeper/reports/daily', label: 'bottom_nav.reports', icon: BarChart3, activePrefix: '/shopkeeper/reports', feature: 'reports' },
 ];
 
 const adminItems: NavItem[] = [
@@ -39,11 +41,28 @@ const adminItems: NavItem[] = [
 export function BottomNav() {
     const { t } = useTranslation();
     const pathname = usePathname();
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, hasFeature } = useAuth();
 
     if (!user) return null;
 
-    const navItems = isAdmin ? adminItems : shopkeeperItems;
+    // Process items based on feature flags
+    let navItems = isAdmin ? adminItems : shopkeeperItems;
+
+    if (!isAdmin) {
+        navItems = navItems
+            .map(item => {
+                // Special handling for Customers: show normal customers when dueCustomers is disabled
+                if (item.label === 'bottom_nav.customers' && !hasFeature('dueCustomers')) {
+                    return { ...item, href: '/shopkeeper/customers/normal' };
+                }
+                return item;
+            })
+            .filter(item => {
+                // Filter out items with disabled features, except Customers (which always shows)
+                if (!item.feature || item.label === 'bottom_nav.customers') return true;
+                return hasFeature(item.feature);
+            });
+    }
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-200/60 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)] safe-area-bottom">

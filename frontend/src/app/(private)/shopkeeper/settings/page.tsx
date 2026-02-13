@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import {
     Card,
@@ -19,7 +20,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, User, Lock, Store, Settings, Calendar, Shield, Smartphone, Mail, AlertCircle, Eye, EyeOff, Navigation } from 'lucide-react';
+import { Loader2, User, Lock, Store, Settings, Calendar, Shield, Smartphone, Mail, AlertCircle, Eye, EyeOff, Navigation, Users, ToggleLeft } from 'lucide-react';
 import axios from '@/config/axios';
 import { Header } from '@/components/app/header';
 import { format } from 'date-fns';
@@ -27,10 +28,11 @@ import { useTranslation } from 'react-i18next';
 
 export default function SettingsPage() {
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, hasFeature } = useAuth();
     const { updateUser } = useAuthStore();
     const [isProfileUpdating, setIsProfileUpdating] = useState(false);
     const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
+    const [isFeaturesUpdating, setIsFeaturesUpdating] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -157,10 +159,14 @@ export default function SettingsPage() {
 
                 <Tabs defaultValue="profile" className="w-full space-y-6">
                     <div className="sticky top-[73px] z-10 bg-gradient-to-b from-gray-50/95 to-transparent pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-                        <TabsList className="grid w-full md:w-[400px] grid-cols-2 bg-white/50 backdrop-blur border shadow-sm">
+                        <TabsList className="grid w-full md:w-[500px] grid-cols-3 bg-white/50 backdrop-blur border shadow-sm">
                             <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:text-purple-900 data-[state=active]:shadow-sm">
                                 <User className="h-4 w-4 mr-2" />
                                 {t('common.profile')}
+                            </TabsTrigger>
+                            <TabsTrigger value="features" className="data-[state=active]:bg-white data-[state=active]:text-purple-900 data-[state=active]:shadow-sm">
+                                <ToggleLeft className="h-4 w-4 mr-2" />
+                                {t('settings_page.features')}
                             </TabsTrigger>
                             <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:text-purple-900 data-[state=active]:shadow-sm">
                                 <Shield className="h-4 w-4 mr-2" />
@@ -297,6 +303,82 @@ export default function SettingsPage() {
                                         </Button>
                                     </div>
                                 </form>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Features Tab */}
+                    <TabsContent value="features" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                        <Card className="border-0 shadow-lg overflow-hidden rounded-xl md:rounded-2xl bg-white/80 backdrop-blur-sm">
+                            <CardHeader className="border-b bg-gray-50/50">
+                                <CardTitle className="flex items-center gap-2">
+                                    <div className="p-2 rounded-lg bg-blue-100">
+                                        <ToggleLeft className="h-5 w-5 text-blue-700" />
+                                    </div>
+                                    {t('settings_page.features_title')}
+                                </CardTitle>
+                                <CardDescription>
+                                    {t('settings_page.features_desc')}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <div className="space-y-4">
+                                    {/* Due Customers Toggle */}
+                                    <div className={`rounded-xl border-2 transition-all duration-300 ${hasFeature('dueCustomers')
+                                            ? 'border-blue-200 bg-blue-50/30'
+                                            : 'border-gray-200 bg-gray-50/30'
+                                        }`}>
+                                        <div className="p-4 md:p-5">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+                                                    <div className={`w-11 h-11 md:w-12 md:h-12 flex-shrink-0 rounded-xl flex items-center justify-center transition-all duration-300 ${hasFeature('dueCustomers')
+                                                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                                                            : 'bg-gray-200 text-gray-400'
+                                                        }`}>
+                                                        <Users className="h-5 w-5 md:h-6 md:w-6" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <h3 className="font-bold text-sm md:text-base text-gray-900">
+                                                                {t('settings_page.due_customers')}
+                                                            </h3>
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold transition-all duration-300 ${hasFeature('dueCustomers')
+                                                                    ? 'bg-green-100 text-green-700'
+                                                                    : 'bg-gray-100 text-gray-500'
+                                                                }`}>
+                                                                {hasFeature('dueCustomers') ? t('settings_page.feature_enabled') : t('settings_page.feature_disabled')}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs md:text-sm text-gray-500 mt-1 leading-relaxed">
+                                                            {t('settings_page.due_customers_desc')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-shrink-0 pt-1">
+                                                    <Switch
+                                                        id="due-customers-toggle"
+                                                        checked={hasFeature('dueCustomers')}
+                                                        disabled={isFeaturesUpdating}
+                                                        onCheckedChange={async (checked) => {
+                                                            setIsFeaturesUpdating(true);
+                                                            try {
+                                                                const response = await axios.patch('/auth/features', {
+                                                                    features: { dueCustomers: checked }
+                                                                });
+                                                                updateUser(response.data.data);
+                                                                toast.success(t('settings_page.features_update_success'));
+                                                            } catch (error: any) {
+                                                                toast.error(error.response?.data?.message || t('settings_page.features_update_failed'));
+                                                            } finally {
+                                                                setIsFeaturesUpdating(false);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

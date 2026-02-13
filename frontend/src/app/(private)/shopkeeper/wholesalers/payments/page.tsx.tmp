@@ -11,6 +11,6 @@ import {
     LayoutDashboard, Users, Plus, CheckCircle
 } from 'lucide-react';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { ml } from 'date-fns/locale';
+import { ml } from '@/lib/date-fns-ml';
 
 import { Header } from '@/components/app/header';
