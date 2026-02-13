@@ -6,6 +6,7 @@ const featuresSchema = z.object({
     normalCustomers: z.boolean().default(true),
     billing: z.boolean().default(true),
     reports: z.boolean().default(true),
+    invoices: z.boolean().default(true),
 });
 
 export const createShopkeeperSchema = z.object({

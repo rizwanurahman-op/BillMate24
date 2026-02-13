@@ -29,6 +29,7 @@ const updateAdmin = async () => {
             normalCustomers: true,
             billing: true,
             reports: true,
+            invoices: true,
         };
 
         await existingAdmin.save();
