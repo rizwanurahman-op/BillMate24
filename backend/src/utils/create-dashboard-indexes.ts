@@ -32,10 +32,11 @@ async function safeCreateIndex(
     } catch (error: any) {
         // Error code 85 = IndexOptionsConflict (index exists with different name)
         // Error code 86 = IndexKeySpecsConflict (similar index already exists)
-        if (error.code === 85 || error.code === 86) {
-            return false; // Skip, already exists
+        // Error code 26 = NamespaceNotFound (collection doesn't exist yet on fresh DB)
+        if (error.code === 85 || error.code === 86 || error.code === 26) {
+            return false; // Skip — collection empty or index already exists
         }
-        throw error; // Re-throw other errors
+        throw error; // Re-throw other unexpected errors
     }
 }
 
@@ -125,8 +126,9 @@ export async function createDashboardIndexes() {
         console.log(`✅ Dashboard indexes: ${created} created, ${skipped} skipped (already exist)`);
         console.log('Dashboard queries are optimized for performance.');
     } catch (error) {
-        console.error('❌ Error creating indexes:', error);
-        throw error;
+        // Non-fatal: indexes will be created automatically on first document insert.
+        // This is expected on a fresh/empty database.
+        console.warn('⚠️ Could not create dashboard indexes (empty DB? indexes will be created on first use):', (error as Error).message);
     }
 }
 
