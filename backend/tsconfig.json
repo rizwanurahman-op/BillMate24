@@ -13,13 +13,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
 
-    "moduleResolution": "node",
-
     "types": ["node"],
 
-    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     },
 
     "declaration": true,
